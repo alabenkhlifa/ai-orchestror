@@ -66,9 +66,9 @@ The canonical project skills live under `.agents/skills/` and follow the Agent S
 
 - Git repository initialized on `main` with the initial project bootstrap committed locally.
 - Shared Codex and Claude Code instructions added.
-- `add-spec`, `update-spec`, and `implement-spec` copied from the starter kit without project-specific adaptation.
+- `add-spec`, `update-spec`, and `implement-spec` installed as shared Codex and Claude skills; `update-spec` now includes progress-log discipline learned from this project's specification work.
 - OpenAI Symphony selected as the implementation foundation; no reference code has been imported and no implementation language has been selected yet.
-- The first draft specification covers GitHub login and linking GitHub or local repositories under `specs/01-project-onboarding/`; implementation is blocked pending specification review and technology decisions.
+- Project onboarding is organized as six ordered specifications under `specs/`: GitHub onboarding, local onboarding, hosted passwordless access, GitHub identity linking, project storage lifecycle, and project portability. All remain draft and blocked pending their recorded decisions and technology choices.
 - No dashboard, service, worker runtime, provider integration, or application toolchain implemented yet.
 
 ## Documentation Boundaries
@@ -82,7 +82,7 @@ The canonical project skills live under `.agents/skills/` and follow the Agent S
 
 The detailed discussion still needs to define:
 
-- The unresolved product questions recorded in the project-onboarding specification.
+- The unresolved product questions recorded across the ordered project specifications.
 - Whether to fork or extend Symphony's Elixir reference implementation or implement its specification in another runtime.
 - The V1 boundary between the dashboard, control service, and workers.
 - Repository discovery and connection behavior.
