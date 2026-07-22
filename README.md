@@ -23,6 +23,8 @@ The current direction includes:
 - OpenAI Codex as the primary coding agent.
 - A clear provider setup experience for credentials and model selection.
 - Support for OpenAI models with room for other providers and locally hosted models.
+- GDPR data protection by design and by default across every database schema, backend path, integration, worker, agent, log, export, retention process, and deletion process.
+- Aggregate analytics that are genuinely anonymous and cannot be linked to users, devices, workspaces, projects, repositories, network identifiers, or source content.
 
 This direction is not an approved V1 specification. Product discovery is still in progress.
 

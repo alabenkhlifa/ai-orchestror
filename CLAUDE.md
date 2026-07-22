@@ -38,6 +38,19 @@ Before implementation, read the relevant files under `specs/<feature>/`:
 
 Do not replace an explicit project decision with an assumption.
 
+## Privacy And Data Protection
+
+GDPR compliance is a project-wide requirement for every database schema, backend path, integration, log, export, retention process, deletion process, worker, and agent data flow.
+
+- Apply data protection by design and by default, purpose limitation, data minimization, storage limitation, least privilege, appropriate security, and auditable lifecycle enforcement from the specification onward.
+- Before adding or changing personal-data storage or processing, use the applicable SDD workflow to record its purpose, lawful basis, necessity, access boundary, retention, deletion, data-subject-rights behavior, processors, transfers, and required privacy review.
+- Analytics must always be aggregate and genuinely anonymous. Do not retain user, device, workspace, project, repository, network, content, or stable pseudonymous identifiers in analytics.
+- Treat pseudonymised, hashed, encrypted, or otherwise linkable data as personal data, not anonymous analytics.
+- Include derived records, soft-deleted data, logs, caches, indexes, backups, exports, local workers, coding agents, model providers, and other subprocessors in privacy and retention analysis.
+- Automated tests and technical controls provide compliance evidence but do not establish legal compliance by themselves. Keep affected work blocked until required privacy or legal decisions and reviews are recorded.
+
+Use the official [GDPR text](https://eur-lex.europa.eu/eli/reg/2016/679/oj) and [European Data Protection Board anonymisation guidance](https://www.edpb.europa.eu/topics/ai-and-technology/anonymisation-pseudonymisation_en) as primary references.
+
 ## SDD Workflows
 
 The SDD skills are mandatory. Select the matching skill from the user's intent even when the user does not name the skill explicitly:
