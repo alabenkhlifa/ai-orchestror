@@ -79,6 +79,10 @@ Do not continue by silently choosing a new product or architecture decision.
 
 ## Write-Back Rules
 
+- During discussion of an existing specification, any answer or agreement that needs to persist must be written through `update-spec`; do not edit the specification through an ad hoc workflow.
+- Immediately after the user answers a question about an existing specification, activate or continue `update-spec` and write the accepted answer into every affected specification file before asking the next question or ending the session.
+- Accepted decisions, resolved questions, newly exposed blockers, status changes, and progress must not live only in the conversation.
+- A new conversation should recover specification state from the repository and need only the user's next intent. Do not compensate for missing write-back with a handoff mega-prompt.
 - Update `requirements.md` when expected behavior, scope, or a business rule changes.
 - Update `design.md` when a technical decision or tradeoff changes.
 - Update `tasks.md` when progress, verification state, blocked decisions, or deferred work changes.
