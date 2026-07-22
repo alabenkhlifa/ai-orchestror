@@ -19,8 +19,9 @@ Use one guided onboarding flow with two repository-source paths:
 5. If no local worker is available, guide the user through installation and secure pairing.
 6. Ask the paired worker to validate and identify the local repository selected by the user without uploading its contents.
 7. Validate the one-project-per-repository rule.
-8. Create the project and repository connection as one operation.
-9. Show the project with its repository source and connection status. Do not start specification or agent work automatically.
+8. Derive the project name from the repository name and allocate the lowest available numeric suffix within the personal workspace when needed.
+9. Create the project and repository connection as one operation, including the final user-scoped project name.
+10. Show the project with its repository source and connection status. Do not start specification or agent work automatically.
 
 The first executable implementation slice should deliver the GitHub path end to end. Local worker onboarding and local repository linking remain requirements of this feature but should be implemented as a later slice after the GitHub path proves the account, workspace, project, and repository-identity model.
 
@@ -49,6 +50,7 @@ The logical domain needs these records regardless of the eventual persistence te
 Required boundaries:
 
 - Every project belongs to one personal workspace.
+- A project display name is unique within its personal workspace, not globally across users.
 - Every repository connection belongs to one personal workspace and one project.
 - The repository connection identity must be unique within its personal workspace.
 - GitHub authorization and session secrets must remain server-side or in an equivalent protected credential boundary and must not be returned to the browser after acceptance.
@@ -61,7 +63,7 @@ Required boundaries:
 - GitHub identity interface: authenticate the user and return stable identity information.
 - GitHub repository catalog interface: list every repository available under the granted account access and return a stable repository identity plus display metadata.
 - Session interface: establish, restore, expire, and end authenticated access.
-- Project registration interface: validate repository uniqueness and create the project and repository link atomically.
+- Project registration interface: validate repository uniqueness, allocate a user-scoped project name, and create the project and repository link atomically.
 - Worker pairing interface: establish trust between the personal workspace and a local worker without requiring the user to edit configuration or manually manage a long-lived secret.
 - Local repository interface: validate a user-selected path as a Git repository and return only the metadata needed to identify it and report availability.
 - Connection-status interface: distinguish connected, unavailable, authorization-required, and invalid states without exposing secrets or local source content.
@@ -94,6 +96,12 @@ Exact protocols and schemas remain part of the technology-selection update.
 - Reason: It gives later specifications, runs, workers, and verification evidence one unambiguous repository boundary.
 - Consequence: Monorepo subprojects and multiple SDD configurations for one repository are deferred.
 
+### User-Scoped Project Names
+
+- Choice: Default the project name to the repository name and keep names unique only within the owning personal workspace.
+- Reason: The default requires no naming decision from a non-technical user, while user-scoped uniqueness allows different users to link the same repository independently.
+- Consequence: When the base name is already used, project creation must atomically allocate the lowest available suffix, starting with `-1`, without weakening repository-identity uniqueness.
+
 ### Local Source Stays Local
 
 - Choice: Link local repositories through a paired local worker and do not upload repository content during onboarding.
@@ -113,6 +121,7 @@ Exact protocols and schemas remain part of the technology-selection update.
 - A compromised pairing flow could grant access to a user's machine. Bind pairing to the authenticated user, expire incomplete attempts, and make paired workers visible and revocable.
 - Local paths can reveal sensitive machine information. Define the minimum metadata sent to the control plane and avoid displaying full paths unless required by the user.
 - Repository renames, transfers, changed Git remotes, and lost permissions can defeat naive duplicate detection. Define canonical hosted and local repository identities before implementation.
+- Concurrent project creation can allocate the same project name or numeric suffix. Enforce user-scoped name uniqueness at the persistence boundary and retry suffix allocation after a conflict.
 - GitHub outages, rate limits, organization policies, or SSO requirements can make an accessible repository temporarily unavailable. Preserve consistent project state and show a recoverable connection status.
 - Selecting a framework before these boundaries are resolved could make the Symphony foundation or local-worker model harder to adopt. Keep technology selection as an explicit approval gate.
 
@@ -125,5 +134,5 @@ Exact protocols and schemas remain part of the technology-selection update.
 - How is the local worker packaged, installed, updated, paired, revoked, and reconnected?
 - Which transport lets the control plane reach a local worker without requiring inbound network access to the user's computer?
 - What canonical identity prevents duplicate links for GitHub repositories and for local repositories whose paths or remotes change?
+- How will project-name comparison handle letter case, and when can a user rename a generated project name?
 - What is the minimum local repository metadata that may leave the user's computer?
-

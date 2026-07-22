@@ -104,6 +104,7 @@ For instruction and skill changes, run the checks that currently apply:
 - Claude skill links: `find -L .claude/skills -type l` must return no broken links.
 - Patch integrity: `git diff --check`
 - Skills: validate every changed canonical skill under `.agents/skills/` with the validator provided by the active skill-authoring environment.
+- Specifications: `python3 .agents/scripts/validate_spec.py specs/<feature>`
 
 When the first executable slice introduces a build, test, type-check, lint, or runtime command, record the canonical commands here and in the relevant verification gate before marking that slice `Approved`.
 

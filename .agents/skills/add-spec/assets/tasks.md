@@ -19,6 +19,10 @@ Excluded:
 
 - <Related work that must remain separate>
 
+Deferred after this slice:
+
+- <Required behavior planned for a later executable slice>
+
 ## Tasks
 
 - [ ] <First implementation step>
@@ -50,4 +54,3 @@ Excluded:
 - Remaining: <What is still open>
 - Failed checks: <Failure that still blocks completion>
 - Spec updates: <Requirements or design decisions written back>
-

@@ -16,7 +16,7 @@ Included:
 - GitHub sign-in, session restoration, and sign-out.
 - Personal workspace creation and restoration.
 - GitHub repository catalog retrieval, search, loading, empty, and failure states.
-- Project and repository-connection creation with the one-to-one repository rule.
+- Project and repository-connection creation with the one-to-one repository rule and user-scoped project-name allocation.
 - A project summary showing the linked GitHub repository and connection status.
 - Automated and browser-level proof for the active acceptance criteria.
 - Security checks for session and GitHub credential exposure within this slice.
@@ -49,8 +49,8 @@ Excluded:
   - Proof: Integration tests cover pagination, search, empty results, private and organization repositories when returned by GitHub, authorization failure, and rate-limit or provider failure.
 
 - [ ] Implement atomic project and repository linking.
-  - Purpose: Create one project for one selected repository while preventing duplicate links or partial records.
-  - Proof: Domain and persistence tests cover successful creation, concurrent duplicate attempts, provider identity normalization, rollback on failure, and workspace ownership enforcement.
+  - Purpose: Create one project for one selected repository while preventing duplicate links, duplicate user-scoped names, or partial records.
+  - Proof: Domain and persistence tests cover the repository-name default, lowest-available numeric suffixes, reuse by different users, concurrent naming and repository conflicts, provider identity normalization, rollback on failure, and workspace ownership enforcement.
 
 - [ ] Build the GitHub onboarding and project-summary experience.
   - Purpose: Provide a guided path usable by a BA, PO, PM, or developer without requiring repository URLs or terminal commands.
@@ -79,7 +79,7 @@ Excluded:
 - Select and configure the GitHub integration model and required permissions.
 - Define session, GitHub credential, and application-secret storage and revocation.
 - Define the test strategy and canonical build, format, lint, static-check, and browser commands.
-- Resolve the requirements questions about project naming and lost GitHub repository access.
+- Resolve the requirements questions about project-name editing, case sensitivity, and lost GitHub repository access.
 
 ## Progress Log
 
@@ -89,3 +89,10 @@ Excluded:
 - Remaining: Review the product questions, select technologies, update the design, and approve the slice before implementation.
 - Failed checks: None; implementation has not started.
 - Spec updates: Created the initial project-onboarding specification from the user discovery conversation.
+
+### 2026-07-22 - Project naming decision
+
+- Completed: Defined repository-derived project names, user-scoped uniqueness, cross-user reuse, and lowest-available numeric suffix allocation.
+- Remaining: Resolve whether names are editable, whether uniqueness ignores letter case, and how inaccessible linked GitHub repositories appear.
+- Failed checks: None; implementation has not started.
+- Spec updates: Aligned requirements, design boundaries, implementation proof, and blocked decisions through `update-spec`.
