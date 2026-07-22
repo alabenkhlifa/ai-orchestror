@@ -17,8 +17,8 @@ Activate this skill as the workflow for restoring agreement between requirements
 6. Trace the decision through every affected surface:
    - `requirements.md`: workflow, scope, rules, acceptance criteria, and open questions.
    - `design.md`: logical approach, domain and access boundaries, interfaces, decisions, tradeoffs, risks, and technical questions.
-   - `tasks.md`: active-slice boundary, implementation steps, proof, verification gate, blockers, deferred work, and progress log.
-7. Remove or replace resolved questions, stale blockers, contradicted wording, and invalid proof. Preserve a replaced tradeoff by recording the new choice and consequence.
+   - `tasks.md`: active-slice boundary, implementation steps, proof, verification gate, blockers, deferred work, and progress state when it materially changes.
+7. Remove or replace resolved questions, stale blockers, contradicted wording, and invalid proof. Consolidate obsolete or repetitive discovery checkpoints after confirming their durable decisions live in the current requirements, design, and task state. Preserve a replaced tradeoff by recording the new choice and consequence.
 8. Keep technologies deferred when the decision is still product-level. Add technical consequences as open questions instead of selecting a stack implicitly.
 9. Set status from the resulting state. Move requirements to `Draft` or tasks to `Blocked` when decisions remain, and remove `Verified` whenever existing proof no longer covers the changed behavior.
 10. Run `python3 .agents/scripts/validate_spec.py specs/<feature>` when the project validator exists, then manually confirm that every changed decision agrees across files.
@@ -30,6 +30,15 @@ Activate this skill as the workflow for restoring agreement between requirements
 - Add concrete examples when rules involve naming, allocation, permissions, state transitions, ordering, or recovery.
 - Add concurrency, security, or failure implications only when they follow from the decision; keep unselected implementation details open.
 
+## tasks.md State Discipline
+
+- Write every accepted decision back immediately, but place the durable decision in the current requirements, design, active boundary, blockers, or proof rather than relying on chronology.
+- Do not append a progress-log entry for every discovery answer or clarification. The progress log is not a conversation transcript and must not duplicate decisions already visible in current-state sections.
+- Add or update progress only for meaningful implementation movement, a verification result or invalidation, a specification status transition, or a consolidated discovery checkpoint that materially changes readiness or scope.
+- During an active discovery thread, update one current checkpoint in place or omit a progress entry when the changed current-state sections already provide a complete handoff.
+- Keep `tasks.md` limited to the current executable slice. Put future work in concise deferred boundaries or a separate specification instead of expanding the active task list.
+- When repetitive discovery history already exists, consolidate it without removing failed-check evidence, completed implementation history, or decisions that are not represented elsewhere.
+
 ## Boundaries
 
 - Do not implement application changes.
@@ -37,7 +46,8 @@ Activate this skill as the workflow for restoring agreement between requirements
 - Do not erase a tradeoff without recording its replacement.
 - Do not weaken acceptance criteria to make failing code pass.
 - Do not mark implementation as resumable while product, architecture, or verification blockers remain.
+- Do not grow `tasks.md` merely to prove that each conversational turn was written back.
 
 ## Completion
 
-Finish when the changed decision and its proof are visible, affected files agree, stale questions and blockers are removed, available mechanical checks pass, and implementation state is accurate.
+Finish when the changed decision and its proof are visible, affected files agree, stale questions and blockers are removed, `tasks.md` remains a concise representation of the current executable state, available mechanical checks pass, and implementation state is accurate.
