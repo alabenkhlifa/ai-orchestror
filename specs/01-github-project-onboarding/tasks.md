@@ -92,7 +92,7 @@ Deferred after this slice:
 ## Blocked Decisions
 
 - Select the application runtime, UI approach, persistence system, deployment model, and Symphony boundary.
-- Select the GitHub integration model, permission scope, repository identity, credential lifecycle, and session design.
+- Complete the registered `Orchestra-workflow` GitHub App integration: authorization and installation flow, minimum permission scope, repository identity, credential lifecycle, webhook delivery, organization approval, and session design.
 - Approve the project-data storage-selection contract required before project creation.
 - Decide how the GitHub and local entry actions are released without exposing a non-functional path.
 - Select a safe project-name validation and case-insensitive comparison strategy without changing the accepted display behavior.

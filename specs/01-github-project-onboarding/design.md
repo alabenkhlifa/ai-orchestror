@@ -142,6 +142,12 @@ Semantic tokens:
 - Reason: Non-technical users should not need repository URLs or terminal commands.
 - Consequence: Authorization scope, pagination, rate limits, organization policy, and large-catalog usability require explicit design.
 
+### Registered Public GitHub App
+
+- Choice: Use the registered public GitHub App `Orchestra-workflow` at `https://github.com/apps/orchestra-workflow` for GitHub user authorization and repository installation access.
+- Reason: One public app identity gives users a GitHub-hosted authorization and installation surface for personal and organization repositories.
+- Consequence: The App ID and client ID will be supplied through runtime configuration when the application skeleton exists. Their values, along with the client secret, private key, webhook secret, user tokens, and installation tokens, must not be committed. Permission scope, token lifecycle, session handling, webhook delivery, and organization approval behavior remain implementation blockers.
+
 ### One Project Per Repository
 
 - Choice: Enforce one repository per project and one project per canonical repository inside a personal workspace.
@@ -190,7 +196,7 @@ Semantic tokens:
 
 ## Open Questions
 
-- Which GitHub App, OAuth, or other integration model satisfies identity, repository discovery, permission, revocation, and organization-access requirements?
+- Which user-authorization, installation, permission, revocation, webhook, and organization-approval configuration completes the registered `Orchestra-workflow` GitHub App integration?
 - How are GitHub and application sessions protected, refreshed, revoked, and isolated from coding agents?
 - Which stable repository identifier and transfer rules enforce uniqueness?
 - Which storage-selection contract from `specs/05-project-storage-lifecycle/` is required before project creation commits?

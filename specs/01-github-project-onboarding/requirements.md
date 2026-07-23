@@ -68,6 +68,7 @@ A BA, PO, PM, developer, or other project contributor can sign in with GitHub, f
 - Signing in or out must not replace the current device's manual theme choice.
 - Theme, connection, warning, and failure meaning must never depend on color alone; meaningful states require text and an icon or equivalent non-color cue.
 - GitHub sign-in must restore one stable personal workspace for the authenticated GitHub identity.
+- GitHub authorization and repository-access consent must identify the registered public GitHub App as `Orchestra-workflow` and use its public installation page at `https://github.com/apps/orchestra-workflow`.
 - Fresh GitHub authentication that restores a non-empty workspace must open the project catalog rather than force the user to create another project.
 - Fresh GitHub authentication that creates or restores an empty workspace must continue directly to repository selection.
 - The project catalog must expose an `Add project` action that opens repository selection without creating or linking anything by itself.
@@ -127,7 +128,6 @@ A BA, PO, PM, developer, or other project contributor can sign in with GitHub, f
 
 ## Open Questions
 
-- Which GitHub integration model provides sign-in, complete repository discovery, acceptable permission scope, and secure long-lived access?
 - How are sessions and GitHub credentials stored, refreshed, revoked, and separated from coding-agent processes?
 - What canonical identity prevents duplicate GitHub repository links across renames, transfers, and remote URL changes?
 - Which project-data storage choice must be available before final project creation, and how does this slice integrate with `specs/05-project-storage-lifecycle/`?
