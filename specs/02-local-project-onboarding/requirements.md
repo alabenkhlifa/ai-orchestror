@@ -22,7 +22,7 @@ A user can choose `Work without GitHub`, connect a Git repository on their compu
 5. The paired worker lets the user select a local path and validates that it is a Git repository.
 6. The worker returns only the approved repository identity and connection metadata.
 7. The product applies the shared repository-uniqueness and project-naming rules.
-8. The project and local repository connection are created atomically and shown without starting an agent.
+8. The project and local repository connection are created atomically, then the product opens the new project's dashboard with its repository, storage mode, and connection status without starting an agent.
 
 ## In Scope
 
@@ -32,6 +32,7 @@ A user can choose `Work without GitHub`, connect a Git repository on their compu
 - Local Git repository selection and validation.
 - Minimum repository identity and connection metadata exchange.
 - Project creation using the shared naming and repository-uniqueness rules.
+- Direct post-creation handoff to the new project's dashboard.
 - Persistent project visibility when the worker or repository becomes unavailable.
 - Integration boundaries for hosted passwordless access and project storage selection.
 - Actionable failure states for non-technical users.
@@ -52,6 +53,8 @@ A user can choose `Work without GitHub`, connect a Git repository on their compu
 
 - Selecting `Work without GitHub` means the repository is local to the user's computer; it does not require the AI agent to run locally.
 - A GitHub account is not required for the local path.
+- The first usable release must not be made available until both `Work without GitHub` and `Login with GitHub` can complete their specified onboarding paths.
+- Neither primary action may be disabled, hidden, presented as a placeholder, or lead to a dead or incomplete path in that release.
 - Accountless on-device projects are owned by the current operating-system user and filesystem permission boundary.
 - SDD Orchestrator does not add a second local multi-user isolation layer inside that boundary.
 - A local worker must be explicitly paired to the current personal or device workspace before it can register a repository.
@@ -62,6 +65,8 @@ A user can choose `Work without GitHub`, connect a Git repository on their compu
 - The control plane may receive only the approved metadata needed to establish canonical repository identity and connection state.
 - Linking must not modify repository files, branches, remotes, hooks, or Git configuration.
 - Local projects use the same workspace-scoped, case-insensitive naming and one-project-per-repository rules as GitHub projects.
+- Successful project creation must open the new project's dashboard rather than return to the entry surface, repository selection, or project catalog.
+- The new project's dashboard must show the linked repository, selected storage mode, and current connection status.
 - A worker or repository becoming unavailable changes connection state without deleting or hiding the project.
 - Authentication later may combine on-device and authorized hosted projects in one catalog, but must not upload, reassign, duplicate, or change the storage mode of on-device projects.
 - Every project in a combined catalog must show its storage mode and current device availability.
@@ -71,11 +76,13 @@ A user can choose `Work without GitHub`, connect a Git repository on their compu
 ## Acceptance Criteria
 
 - Given a user selects `Work without GitHub`, when onboarding starts, then no GitHub authentication is requested.
+- Given a candidate first usable release, when either primary action is selected, then its specified onboarding path is available through completion without a disabled, placeholder, or dead action.
 - Given no worker is paired, when the local path continues, then the user receives actionable installation and pairing guidance rather than a terminal-only dead end.
 - Given a valid pairing attempt, when pairing succeeds, then the worker is bound only to the current workspace with protected replaceable credentials.
 - Given a path is not a Git repository, when validation runs, then project creation is blocked and no source content is uploaded.
 - Given a valid local Git repository, when the user confirms it, then the worker returns only approved identity and connection metadata.
 - Given an unlinked local repository and an available project name, when creation succeeds, then one project and one repository connection are created atomically.
+- Given local project creation commits successfully, when onboarding completes, then the new project's dashboard opens and shows the linked repository, selected storage mode, and current connection status.
 - Given the same canonical local repository is already linked in the workspace, when creation is attempted again, then it is blocked without creating a duplicate.
 - Given linking completes, when local repository state is inspected, then files, branches, remotes, hooks, and Git configuration are unchanged.
 - Given the worker later becomes unavailable, when the catalog is shown, then the project remains visible with an unavailable or authorization-required connection state.

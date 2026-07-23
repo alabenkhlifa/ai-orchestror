@@ -6,7 +6,7 @@ Repository location does not determine where SDD project data should live. Users
 
 ## Proposed Approach
 
-Represent storage mode as an explicit project-level boundary. Migrate through a staged destination, verify completeness and compatibility, then atomically switch authority. Treat hosted-to-device movement as activation of the device copy plus isolated hosted soft deletion with an enforced two-year deadline. Reuse the retained version for incremental return to hosted storage, or perform a full upload after cleanup.
+Present storage mode as an explicit, plain-language project-creation step and represent the result as a project-level boundary. Preserve repository selection and onboarding state when device setup temporarily leaves that step, then return without selecting a mode for the user. After atomic project creation, expose the selected mode on the new project's dashboard with its repository and connection status. Migrate through a staged destination, verify completeness and compatibility, then atomically switch authority. Treat hosted-to-device movement as activation of the device copy plus isolated hosted soft deletion with an enforced two-year deadline. Reuse the retained version for incremental return to hosted storage, or perform a full upload after cleanup.
 
 Apply one processing inventory and enforceable retention contract across primary and derived storage, processors, logs, backups, exports, analytics, and legal exceptions.
 
@@ -17,7 +17,7 @@ Apply one processing inventory and enforceable retention contract across primary
 - Storage migration and authority switching.
 - Versioning, change tracking, conflict resolution, and resynchronization.
 - Soft deletion, access isolation, cleanup scheduling, backup and processor propagation.
-- Project catalog storage and availability state.
+- Project catalog and dashboard storage and availability state.
 - Analytics anonymisation and legal-retention boundaries.
 - GDPR processing inventory, rights workflows, security controls, and audit evidence.
 
@@ -44,7 +44,8 @@ Required boundaries:
 
 ## Interfaces
 
-- Storage-selection interface: present device and hosted choices without implying repository or agent location.
+- Storage-selection interface: ask `Where should your project work be saved?`, explain that project work includes specifications, tasks, agent runs, and generated files while the linked repository stays where it is, present `On this device` and `In my SDD Orchestrator account` with their consequences, keep both modes visible, expose missing prerequisites with setup actions, and require an explicit choice after availability is satisfied. Device setup preserves the selected repository and onboarding state, returns to this interface after success, cancellation, or failure, and never selects a mode or creates a project implicitly.
+- Storage-state presentation interface: show the selected authoritative mode on the new project's dashboard with its repository and current connection status after creation commits.
 - Migration interface: stage, validate, activate, fail safely, retry, and report one authoritative copy.
 - Retention interface: mark all hosted project data deleted, isolate it, schedule cleanup, and enforce propagation.
 - Resynchronization interface: compare against a retained baseline or perform full rehydration while preserving stable identity.
@@ -59,7 +60,7 @@ Required boundaries:
 
 - Choice: Let each project independently use device or hosted storage regardless of repository source.
 - Reason: Storage, repository, and agent locations solve different user needs.
-- Consequence: Catalog, authorization, migration, backup, and collaboration logic must preserve explicit storage state.
+- Consequence: Catalog, dashboard, authorization, migration, backup, and collaboration logic must preserve explicit storage state. Onboarding uses `On this device` and `In my SDD Orchestrator account` under `Where should your project work be saved?`, with an explanation of device availability, other-device access, collaboration, and the unaffected repository before the user chooses. Missing prerequisites do not hide a mode. Device setup returns to the same step with the selected repository and onboarding state preserved; successful setup changes availability without choosing for the user, while cancellation or failure creates no project. After creation commits, the new project's dashboard shows the selected authoritative mode with its repository and connection status.
 
 ### Direct Migration
 

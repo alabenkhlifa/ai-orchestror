@@ -76,6 +76,18 @@ Spec-only work must stop after the specification and directly requested project 
 - Use representative acceptance criteria. Do not duplicate a full technical test matrix across requirements, design, and tasks.
 - Stop refining a specification when the product agreement is sufficient for a useful `Draft` and the remaining decisions are clearly owned by technical design.
 
+## Product-First SDD Sequence
+
+- Complete product requirements before asking technical-design or implementation questions or asking the user to make implementation decisions.
+- During product discovery, ask only about observable behavior, workflow, scope, business rules, ownership, data handling, risk acceptance, privacy expectations, and acceptance outcomes.
+- Do not ask about frameworks, libraries, architecture, protocols, data models, storage mechanisms, algorithms, deployment, test commands, or other implementation details while product requirements remain unresolved.
+- Record unresolved engineering questions in `design.md` or technical task blockers without presenting them to the user as missing product requirements.
+- Before asking a product question, search the current requirements, design, tasks, and recorded project decisions. Do not ask for a decision that is already recorded.
+- Do not describe a feature as unspecified merely because its technical design is pending. Report product-requirement completeness, technical-design readiness, and implementation-slice status separately.
+- When product requirements are complete, state that clearly and explicitly transition to technical design.
+- During technical design, make engineering-owned decisions from the approved requirements, project constraints, official documentation, and existing repository patterns. Ask the user only when a choice changes observable behavior or requires explicit product, security, privacy, cost, or operational risk acceptance.
+- Do not begin implementation until the technical design and active slice are approved under the applicable SDD workflow.
+
 ## Implementation Workflow
 
 1. Confirm that requirements and design contain no blocking open questions.

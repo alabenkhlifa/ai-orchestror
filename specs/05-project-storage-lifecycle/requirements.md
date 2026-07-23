@@ -6,7 +6,7 @@ Draft
 
 ## Outcome
 
-A user can choose on-device or SDD Orchestrator-hosted storage for each project's SDD data, change that choice later without modifying the linked repository, and rely on defined synchronization, retention, cleanup, privacy, and analytics behavior.
+A user can choose on-device or SDD Orchestrator-hosted storage for each project's specifications, tasks, agent runs, and generated files, change that choice later without modifying the linked repository, and rely on defined synchronization, retention, cleanup, privacy, and analytics behavior.
 
 ## Users
 
@@ -16,19 +16,23 @@ A user can choose on-device or SDD Orchestrator-hosted storage for each project'
 
 ## Primary Workflow
 
-1. During GitHub or local repository onboarding, the user chooses on-device or hosted project-data storage for that project.
-2. The project is created with one explicit authoritative storage mode.
-3. The user may keep on-device and hosted projects in the same catalog.
-4. The user may later request a direct storage-mode change without export and import.
-5. The destination is transferred and verified before it becomes authoritative.
-6. Moving hosted data on-device marks the hosted project and all related hosted copies deleted, hides them from ordinary access, and starts a two-year cleanup deadline.
-7. Returning to hosted storage before cleanup synchronizes changes against the retained baseline.
-8. Returning after cleanup performs a full upload while preserving stable project and repository identity.
-9. Retention enforcement permanently removes project-scoped hosted data at the deadline except genuinely anonymous analytics and separately lawful minimum legal records.
+1. During GitHub or local repository onboarding, the user reaches a dedicated step that explains which project work the choice covers and that the linked repository stays where it is.
+2. Both storage choices remain visible; a choice whose prerequisite is missing explains what is required and provides the relevant setup action.
+3. If on-device storage requires setup, the product guides the user through device setup and returns to the same storage step with the selected repository and current onboarding state preserved.
+4. The user explicitly chooses whether to save the project work on the current device or in their SDD Orchestrator account after the chosen mode's prerequisites are available.
+5. The project is created with one explicit authoritative storage mode, then the new project's dashboard shows that mode with its repository and connection status.
+6. The user may keep on-device and hosted projects in the same catalog.
+7. The user may later request a direct storage-mode change without export and import.
+8. The destination is transferred and verified before it becomes authoritative.
+9. Moving hosted data on-device marks the hosted project and all related hosted copies deleted, hides them from ordinary access, and starts a two-year cleanup deadline.
+10. Returning to hosted storage before cleanup synchronizes changes against the retained baseline.
+11. Returning after cleanup performs a full upload while preserving stable project and repository identity.
+12. Retention enforcement permanently removes project-scoped hosted data at the deadline except genuinely anonymous analytics and separately lawful minimum legal records.
 
 ## In Scope
 
 - Per-project on-device or hosted storage selection for GitHub and local repositories.
+- Storage-mode presentation on the new-project dashboard after either onboarding path succeeds.
 - Mixed storage modes for one user.
 - Stable project identity across storage changes.
 - Direct device-to-hosted and hosted-to-device migration.
@@ -53,6 +57,17 @@ A user can choose on-device or SDD Orchestrator-hosted storage for each project'
 ## Business Rules
 
 - Storage mode is selected per project, not once for the user or workspace.
+- The selection step must be titled `Where should your project work be saved?`.
+- The selection step must explain: `Your project work includes specifications, tasks, agent runs, and generated files. Your linked repository stays where it is.`
+- The on-device choice must be labeled `On this device` and explain: `Your project work stays on this device. It will not be available on another device or to collaborators unless you move or export it later.`
+- The hosted choice must be labeled `In my SDD Orchestrator account` and explain: `Your project work is saved to your account so you can access it from other devices and collaborate with others.`
+- Both choices must remain visible when a device or identity prerequisite is missing; an unavailable choice must identify the missing prerequisite and provide the relevant setup action instead of disappearing.
+- Starting device setup must preserve the selected repository and current onboarding state.
+- After device setup succeeds, is canceled, or fails, the product must return to the same storage step without losing the selected repository.
+- Successful device setup must only re-evaluate availability. It must not silently select `On this device` or create a project.
+- Canceled or failed device setup must leave `On this device` unavailable and must not create a project.
+- Project creation requires an explicit storage choice; neither mode is silently selected for the user.
+- After project creation succeeds, the new project's dashboard must show the selected authoritative storage mode with the linked repository and current connection status.
 - The same user may have on-device and hosted projects simultaneously.
 - Repository source does not restrict project-data storage; GitHub and local repositories may use either mode.
 - Repository location, project-data storage, local worker location, and AI-agent execution location are independent boundaries.
@@ -85,10 +100,15 @@ A user can choose on-device or SDD Orchestrator-hosted storage for each project'
 
 ## Acceptance Criteria
 
-- Given a GitHub or local repository is selected, when project-data storage is chosen, then on-device and hosted modes are both available under their prerequisites.
+- Given a GitHub or local repository is selected, when the storage step opens, then it is titled `Where should your project work be saved?`, explains what project work includes and that the linked repository stays where it is, and presents `On this device` and `In my SDD Orchestrator account` with their availability and collaboration consequences.
+- Given one storage mode is missing a required device or identity prerequisite, when the storage step opens, then both modes remain visible and the unavailable mode explains the missing prerequisite with a relevant setup action.
+- Given `On this device` requires setup, when the user starts device setup, then the selected repository and current onboarding state are preserved.
+- Given device setup succeeds, is canceled, or fails, when the user returns, then the same storage step and selected repository are restored; success refreshes availability without selecting a mode, while cancellation or failure leaves `On this device` unavailable and creates no project.
+- Given the user has not selected a storage mode, when project creation is evaluated, then creation is blocked without silently choosing a mode.
 - Given one user has an on-device project, when another project is created, then hosted storage can be chosen without changing the first project.
 - Given on-device storage is chosen, when the project is created, then no account is required and project data remains under the device boundary.
 - Given hosted storage is chosen, when creation completes, then an authorized identity protects data that persists independently from the device.
+- Given either storage mode is chosen and project creation commits, when the new project's dashboard opens, then it shows the linked repository, selected authoritative storage mode, and current connection status.
 - Given a project changes storage mode, when migration succeeds, then stable project and repository identities remain unchanged and exactly one copy is authoritative.
 - Given migration fails, when failure is reported, then the prior active copy and mode remain usable and no repository content changes.
 - Given a hosted project moves on-device, when the transition commits, then the hosted project and every related hosted copy are marked deleted, hidden from ordinary access, and assigned a two-year cleanup deadline.

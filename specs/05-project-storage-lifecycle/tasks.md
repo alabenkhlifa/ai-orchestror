@@ -13,9 +13,9 @@ Deliver explicit per-project storage selection at project creation, persist one 
 Included:
 
 - Device and hosted storage-mode values and ownership boundaries.
-- Storage choice for GitHub and local repository projects.
+- Plain-language, explicit storage choice for GitHub and local repository projects.
 - Prerequisite validation for accountless device and authorized hosted modes.
-- Persistence and catalog presentation of the authoritative mode.
+- Persistence and presentation of the authoritative mode in project catalogs and on the new-project dashboard.
 - GDPR data contracts for the introduced records and paths.
 - Automated and browser proof for selection, creation, restoration, and failure.
 
@@ -29,6 +29,10 @@ Deferred after this slice:
 - Hosted-to-device and device-to-hosted migration.
 - Retention enforcement, incremental synchronization, full upload, analytics, legal exceptions, and rights propagation beyond created records.
 
+Release boundary:
+
+- This active storage-selection slice is a shared dependency of the GitHub and local onboarding paths and must pass for both before the first usable release.
+
 ## Tasks
 
 - [ ] Approve the device and hosted storage ownership contract.
@@ -37,19 +41,19 @@ Deferred after this slice:
 
 - [ ] Implement the project-level storage-mode model.
   - Purpose: Give every project-data record one explicit authoritative boundary.
-  - Proof: Schema and domain tests cover valid modes, ownership, defaults, invalid state, and workspace isolation.
+  - Proof: Schema and domain tests cover valid modes, ownership, missing-selection rejection, invalid state, and workspace isolation.
 
 - [ ] Implement storage selection for both repository sources.
-  - Purpose: Keep storage independent from GitHub or local repository location.
-  - Proof: Service and browser tests show both choices under their correct identity and device prerequisites.
+  - Purpose: Let users understand and explicitly choose where project work is saved without confusing it with repository or agent location.
+  - Proof: Service and browser tests show the approved title, project-work explanation, `On this device` and `In my SDD Orchestrator account` consequences, both modes visible when a prerequisite is missing, relevant setup actions, preserved repository and onboarding state across device setup, return after success, cancellation, or failure, availability refresh without implicit selection, and no silent default.
 
 - [ ] Integrate storage mode with atomic project creation.
   - Purpose: Prevent projects with missing, ambiguous, or partially initialized storage.
   - Proof: Transaction and fault-injection tests prove one committed mode or no project.
 
-- [ ] Show storage mode and availability in project catalogs and summaries.
+- [ ] Show storage mode and availability in project catalogs and on the new-project dashboard.
   - Purpose: Make mixed device and hosted projects understandable.
-  - Proof: Desktop and mobile scenarios cover mixed modes, unavailable device data, hosted authorization, and sign-out.
+  - Proof: Desktop and mobile scenarios cover mixed modes, unavailable device data, hosted authorization, sign-out, and post-creation dashboard presentation with repository, storage mode, and connection status.
 
 - [ ] Enforce the slice GDPR data contract and security boundary.
   - Purpose: Govern every introduced record, log, backup, processor, and metric from creation.
@@ -60,7 +64,8 @@ Deferred after this slice:
 - [ ] Active-slice acceptance criteria pass.
 - [ ] Storage-mode domain, ownership, prerequisite, transaction, and restoration tests pass.
 - [ ] GitHub and local onboarding integration tests pass for both modes.
-- [ ] Mixed catalog and sign-out browser scenarios pass.
+- [ ] Storage selection shows the approved labels and explanation, keeps unavailable modes visible with setup actions, preserves repository and onboarding state across device setup, returns to the same step without an implicit choice, and requires an explicit selection.
+- [ ] Mixed catalog, post-creation dashboard, and sign-out browser scenarios pass.
 - [ ] Failure leaves no project with partial or ambiguous storage state.
 - [ ] GDPR data contract, privacy review, and secret-exposure checks pass.
 - [ ] Build, formatting, lint, static checks, and logs review pass.
@@ -72,7 +77,6 @@ Deferred after this slice:
 - Select transaction and failure-recovery behavior for atomic project plus storage initialization.
 - Approve the slice processing purposes, lawful bases, fields, access, retention, deletion, rights, processors, transfers, analytics, and reviews.
 - Select implementation architecture and canonical verification commands.
-- Decide the release dependency between this slice and GitHub and local onboarding.
 
 ## Progress Log
 

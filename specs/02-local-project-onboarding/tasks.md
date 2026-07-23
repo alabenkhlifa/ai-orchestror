@@ -6,7 +6,7 @@ Blocked
 
 ## Active Slice
 
-Deliver accountless on-device onboarding for one local Git repository through one paired worker, ending with a visible project and repository connection without source upload.
+Deliver accountless on-device onboarding for one local Git repository through one paired worker, ending on the new project's dashboard with its repository, storage mode, and connection status visible without source upload.
 
 ## Implementation Boundary
 
@@ -16,6 +16,7 @@ Included:
 - Worker discovery, installation guidance, secure pairing, and status.
 - Local Git repository selection and validation.
 - Approved metadata exchange and atomic project registration.
+- Direct handoff to the new project's dashboard with repository, storage, and connection state.
 - Shared naming and repository-uniqueness rules.
 - Connection-state and failure UX.
 - Privacy and security proof for device metadata and pairing credentials.
@@ -31,6 +32,12 @@ Deferred after this slice:
 
 - Hosted local-repository projects through `specs/03-hosted-passwordless-access/` and `specs/05-project-storage-lifecycle/`.
 - Combined local and hosted catalog deduplication beyond non-mutating composition.
+
+Release boundary:
+
+- This slice may be implemented and verified independently.
+- The first usable release remains blocked until `specs/01-github-project-onboarding/` and every shared dependency invoked by both onboarding paths also pass their release gates.
+- Coordinated browser proof must show that `Work without GitHub` and `Login with GitHub` are both available and complete from the same entry surface.
 
 ## Tasks
 
@@ -60,7 +67,7 @@ Deferred after this slice:
 
 - [ ] Build local onboarding and connection-state UX.
   - Purpose: Complete the path without requiring terminal interaction beyond any approved installer step.
-  - Proof: Desktop and mobile scenarios cover pairing, selection, confirmation, success, and actionable recovery.
+  - Proof: Desktop and mobile scenarios cover pairing, selection, confirmation, success, direct new-project dashboard routing, visible repository, storage mode, and connection status, and actionable recovery.
 
 ## Verification Gate
 
@@ -69,7 +76,9 @@ Deferred after this slice:
 - [ ] Worker and repository integration tests pass on supported platforms.
 - [ ] Source-upload and metadata-minimization checks pass.
 - [ ] Project naming, uniqueness, atomicity, and connection-state tests pass.
+- [ ] Successful creation opens the new project's dashboard with the required repository, storage, and connection state.
 - [ ] Required browser scenarios pass.
+- [ ] The coordinated first-release browser scenarios prove that both primary entry actions are available and complete.
 - [ ] GDPR data contract and privacy review for device metadata and credentials are complete.
 - [ ] Build, formatting, lint, static checks, and logs review pass.
 
