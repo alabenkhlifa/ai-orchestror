@@ -13,8 +13,10 @@ Deliver GitHub project onboarding end to end: authenticate one user, restore the
 Included:
 
 - Application bootstrap required by this slice after architecture approval.
-- GitHub sign-in, protected session restoration, and sign-out.
+- Session-aware entry routing, GitHub sign-in, protected session restoration, and sign-out.
+- Approved onboarding visual tokens, device-local light and dark theme preference, responsive layouts, keyboard operation, and non-color status cues.
 - Personal workspace creation and restoration.
+- Existing-workspace catalog routing and the non-mutating `Add project` handoff.
 - Complete authorized repository catalog retrieval, search, and user-facing states.
 - Atomic project and repository-connection creation.
 - Workspace-scoped naming and post-creation rename.
@@ -41,11 +43,11 @@ Deferred after this slice:
 
 - [ ] Implement GitHub identity and protected session behavior.
   - Purpose: Let the user sign in, restore access, and sign out without exposing credentials.
-  - Proof: Automated and browser tests cover success, restoration, sign-out, cancellation, provider failure, and rejected post-sign-out access.
+  - Proof: Automated and browser tests cover unauthenticated entry, valid-session catalog routing, success, restoration, invalid or expired sessions, revocation, sign-out return to entry, cancellation, provider failure, and rejected post-sign-out access.
 
 - [ ] Create and restore the personal workspace.
   - Purpose: Establish the ownership boundary for projects and repository connections.
-  - Proof: Tests show stable restoration, isolation between users, and no duplicate workspace under retry or concurrency.
+  - Proof: Tests show stable restoration, isolation between users, no duplicate workspace under retry or concurrency, non-empty workspace routing to the catalog, empty workspace routing to repository selection, and a non-mutating `Add project` handoff.
 
 - [ ] Implement the complete GitHub repository catalog.
   - Purpose: Let non-technical users find every repository returned under granted access.
@@ -57,7 +59,7 @@ Deferred after this slice:
 
 - [ ] Implement project display-name allocation and editing.
   - Purpose: Apply repository defaults, case-insensitive lowest-available suffixes, and safe later renames.
-  - Proof: Tests cover cross-user reuse, case conflicts, concurrent creation and rename, and unchanged stable identities.
+  - Proof: Tests cover preserved natural display names, spaces, Unicode, no slug conversion, cross-user reuse, case-insensitive conflicts, concurrent creation and rename, and unchanged stable identities.
 
 - [ ] Preserve project state when GitHub access is lost.
   - Purpose: Treat access loss as a recoverable connection state.
@@ -65,7 +67,7 @@ Deferred after this slice:
 
 - [ ] Build the end-to-end onboarding and project-summary experience.
   - Purpose: Complete the workflow without repository URLs or terminal commands.
-  - Proof: Desktop and mobile browser scenarios cover sign-in, catalog search, selection, confirmation, naming, duplicate prevention, actionable failures, and final summary.
+  - Proof: Desktop and mobile browser scenarios in both themes cover operating-system fallback, device-local manual persistence, no hosted synchronization, sign-in and sign-out continuity, unauthenticated entry, valid-session bypass, sign-in, existing-project catalog routing, empty-workspace continuation, `Add project`, keyboard catalog search and selection, no-match, empty, failure, restricted access, confirmation, naming, duplicate prevention, actionable failures, sign-out, final summary, focus visibility, status cues, and text fit.
 
 - [ ] Define and enforce the slice GDPR data contract.
   - Purpose: Make lawful processing, minimization, retention, rights, processors, transfers, anonymisation, and security part of implementation approval.
@@ -78,10 +80,11 @@ Deferred after this slice:
 ## Verification Gate
 
 - [ ] Active-slice acceptance criteria pass.
-- [ ] Authentication, workspace, repository catalog, project-linking, naming, and connection-state tests pass.
+- [ ] Entry routing, authentication, workspace, repository catalog, project-linking, naming, and connection-state tests pass.
 - [ ] GitHub integration tests pass against the approved provider strategy.
 - [ ] Build, formatting, lint, and static checks pass.
 - [ ] Required desktop and mobile browser scenarios pass.
+- [ ] Light and dark theme, operating-system fallback, device-local preference, no-sync, keyboard-only, focus, contrast, non-color status, responsive text-fit, and layout-stability checks pass.
 - [ ] Credential, session, and failure-log review passes.
 - [ ] GDPR data contracts, retention rules, rights paths, processor boundaries, anonymisation proof, and required privacy review are complete.
 - [ ] New decisions and invalidated proof are written back.
@@ -92,6 +95,7 @@ Deferred after this slice:
 - Select the GitHub integration model, permission scope, repository identity, credential lifecycle, and session design.
 - Approve the project-data storage-selection contract required before project creation.
 - Decide how the GitHub and local entry actions are released without exposing a non-functional path.
+- Select a safe project-name validation and case-insensitive comparison strategy without changing the accepted display behavior.
 - Approve the slice GDPR processing inventory, retention, rights, processors, transfers, analytics boundary, and required reviews.
 - Define canonical build, formatting, lint, static-check, automated-test, integration-test, security-test, and browser-test commands.
 

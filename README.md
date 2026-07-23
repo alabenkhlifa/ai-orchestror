@@ -76,6 +76,7 @@ The canonical project skills live under `.agents/skills/` and follow the Agent S
 - `README.md` describes the project identity and current direction.
 - `AGENTS.md` and `CLAUDE.md` define how coding agents work in this repository.
 - Files under `specs/` define product behavior, design decisions, implementation slices, verification, and their current approval status.
+- Files under `design-references/` preserve exported visual prototypes for comparison; they are not application source or a substitute for the specifications.
 - Writing and case-study notes provide book and article evidence but are not the product source of truth.
 
 ## Open Product Questions

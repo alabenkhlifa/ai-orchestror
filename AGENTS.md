@@ -67,6 +67,15 @@ When one request combines a new or changed specification with implementation, co
 
 Spec-only work must stop after the specification and directly requested project guidance are updated. Do not continue into code, migrations, tests, dependencies, or runtime configuration.
 
+## Decision Ownership And Specification Depth
+
+- Ask users for decisions they own: observable behavior, workflow, scope, business rules, ownership, data handling, risk acceptance, and acceptance outcomes.
+- Do not ask users to choose implementation mechanisms, algorithms, normalization rules, storage representations, library choices, or exhaustive technical edge cases when the alternatives preserve the accepted product behavior.
+- Ask about a technical alternative only when it materially changes a user-visible outcome or requires explicit product, security, privacy, cost, or operational risk acceptance.
+- Consolidate unresolved engineering mechanisms in design open questions or task blockers. Do not turn them into serial product-discovery questions.
+- Use representative acceptance criteria. Do not duplicate a full technical test matrix across requirements, design, and tasks.
+- Stop refining a specification when the product agreement is sufficient for a useful `Draft` and the remaining decisions are clearly owned by technical design.
+
 ## Implementation Workflow
 
 1. Confirm that requirements and design contain no blocking open questions.
