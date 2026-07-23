@@ -12,7 +12,7 @@ Deliver GitHub project onboarding end to end: authenticate one user, restore the
 
 Included:
 
-- Application bootstrap required by this slice after architecture approval.
+- Single Phoenix/LiveView application bootstrap, PostgreSQL persistence, local assets, OCI release, and canonical checks selected by this slice.
 - Session-aware entry routing, GitHub sign-in, protected session restoration, and sign-out.
 - Approved onboarding visual tokens, device-local light and dark theme preference, responsive layouts, keyboard operation, and non-color status cues.
 - Personal workspace creation and restoration.
@@ -20,18 +20,20 @@ Included:
 - GitHub App repository-access checking, the dedicated grant screen, installation handoff, and validated return.
 - Complete authorized repository catalog retrieval, search, and user-facing states.
 - Shared plain-language project-data storage selection before final confirmation.
-- Atomic project and repository-connection creation.
+- Shared `ProjectStorage` contract, hosted storage adapter, device readiness-receipt integration boundary, and atomic project and repository-connection creation.
 - Direct handoff to the new project's dashboard with repository, storage, and connection state.
 - Workspace-scoped naming and post-creation rename.
 - Persistent disconnected project state.
 - GDPR data contracts, security controls, and proof for data introduced by the slice.
+- Enforcement that Slice 01 emits and retains no product analytics.
 - Automated, integration, security, and browser verification.
 
 Excluded:
 
-- Local repository onboarding, passwordless hosted access, identity linking, storage migration, portability, collaboration, and agent execution.
+- Local repository onboarding, device setup and its production storage adapter, passwordless hosted access, identity linking, storage migration, portability, collaboration, and agent execution.
 - Remote, cloud, or Raspberry Pi workers.
 - Repository editing or source upload.
+- GitHub webhook ingestion and background repository synchronization.
 
 Deferred after this slice:
 
@@ -47,12 +49,12 @@ Release boundary:
 ## Tasks
 
 - [ ] Establish the approved application skeleton and canonical development checks.
-  - Purpose: Provide only the runtime, UI, persistence, configuration, and test foundations required by this slice.
-  - Proof: Setup, build, formatting, lint, static checks, and the empty test suite succeed from a clean checkout.
+  - Purpose: Provide only the selected Phoenix, LiveView, PostgreSQL, local-asset, release, configuration, and test foundations required by this slice.
+  - Proof: A clean checkout pins the approved runtime and dependencies; `mise install`, `docker compose up -d postgres`, `mix setup`, `mix check`, `mix dialyzer`, `mix deps.audit`, `mix sobelow --config`, the Playwright setup, production asset build, and production release succeed without committed secrets.
 
 - [ ] Implement GitHub identity and protected session behavior.
   - Purpose: Let the user sign in, restore access, and sign out without exposing credentials.
-  - Proof: Automated and browser tests cover unauthenticated entry, valid-session catalog routing, success, restoration, invalid or expired sessions, revocation, sign-out return to entry, cancellation, provider failure, and rejected post-sign-out access.
+  - Proof: Automated and browser tests cover PKCE and state success, one-time consumption, mismatch, replay, expiry, cancellation, token encryption and refresh, 24-hour idle and 30-day absolute application-session expiry, rotation, restoration, revocation, sign-out return to entry, provider failure, agent isolation, and rejected post-sign-out access.
 
 - [ ] Create and restore the personal workspace.
   - Purpose: Establish the ownership boundary for projects and repository connections.
@@ -60,52 +62,50 @@ Release boundary:
 
 - [ ] Implement GitHub App repository access and the complete repository catalog.
   - Purpose: Guide non-technical users through repository access when needed, then let them find every repository returned under the validated grant.
-  - Proof: Integration and browser tests cover the approved `Metadata: read-only` permission boundary with no assumed write access, no accessible installation, the grant screen, GitHub handoff, pending organization approval and status refresh, valid return, rejected or invalid return, pagination, search, empty results, personal, private, and organization repositories, authorization failures, rate limits, and provider failure.
+  - Proof: Deterministic provider-contract, integration, and browser tests cover `Metadata: read-only`, no webhook dependency, app-JWT pending-request lookup, no accessible installation, the grant screen, state-bound GitHub handoff, untrusted return parameters, authenticated access re-read, pending organization approval and `Check again`, pagination, deduplication by numeric repository ID, search, empty results, personal, private, and organization repositories, authorization failures, rate limits, and provider failure.
 
 - [ ] Implement atomic project and repository linking.
   - Purpose: Create one project for one selected canonical repository and explicit storage mode without partial or duplicate records.
-  - Proof: Persistence tests cover repository uniqueness, required storage selection, atomic storage initialization, rollback, concurrency, workspace ownership, and provider identity stability.
+  - Proof: Persistence and fault-injection tests cover the `(workspace, provider, repository ID)` constraint, required storage selection, hosted `Ecto.Multi` initialization, device readiness-receipt validation through the shared adapter, idempotent retry, abort, rollback, concurrency, workspace ownership, and stable identity across repository display changes.
 
 - [ ] Implement project display-name allocation and editing.
   - Purpose: Apply repository defaults, case-insensitive lowest-available suffixes, and safe later renames.
-  - Proof: Tests cover preserved natural display names, spaces, Unicode, no slug conversion, cross-user reuse, case-insensitive conflicts, concurrent creation and rename, and unchanged stable identities.
+  - Proof: Tests cover preserved natural display names, boundary whitespace, blank and control-character rejection, spaces, Unicode `NFKC` plus default case-fold comparison, no slug conversion, cross-user reuse, case-insensitive conflicts, lowest suffix allocation, concurrent creation and rename, and unchanged stable identities.
 
 - [ ] Preserve project state when GitHub access is lost.
   - Purpose: Treat access loss as a recoverable connection state.
-  - Proof: Tests show the project remains visible, becomes disconnected, exposes no stale credential, and returns to connected after revalidation.
+  - Proof: Tests show confirmed access loss disconnects the visible project, a transient provider failure preserves the last confirmed state, no stale credential is exposed, and authenticated revalidation reconnects the same project.
 
 - [ ] Build the end-to-end onboarding and new-project dashboard handoff.
   - Purpose: Complete the workflow without repository URLs or terminal commands.
   - Proof: Desktop and mobile browser scenarios in both themes cover operating-system fallback, device-local manual persistence, no hosted synchronization, sign-in and sign-out continuity, unauthenticated entry, valid-session bypass, sign-in, existing-project catalog routing, empty-workspace continuation, `Add project`, repository-access checking, the grant screen, GitHub handoff, pending organization approval and refresh, valid return, keyboard catalog search and selection, no-match, empty, failure, restricted access, the approved storage copy, unavailable-mode setup, preserved repository and onboarding state, return after setup success, cancellation, or failure, availability refresh without implicit selection, explicit selection, confirmation, naming, duplicate prevention, actionable failures, sign-out, direct new-project dashboard routing, visible repository, storage mode, and connection status, focus visibility, status cues, and text fit.
 
 - [ ] Define and enforce the slice GDPR data contract.
-  - Purpose: Make lawful processing, minimization, retention, rights, processors, transfers, anonymisation, and security part of implementation approval.
-  - Proof: The processing inventory and automated lifecycle checks cover every field, log, cache, backup, export, processor, and allowed anonymous metric, with required privacy review recorded.
+  - Purpose: Make lawful processing, minimization, retention, rights, processors, transfers, no-analytics enforcement, and security part of implementation approval.
+  - Proof: The approved processing inventory and automated lifecycle checks cover every field, authorization and onboarding attempt, session, credential, log, cache, backup, export, and processor; network and data-store checks prove that no product analytics is emitted or retained; required privacy and legal reviews are recorded.
 
 - [ ] Complete security and observability review.
   - Purpose: Diagnose failure without leaking secrets or leaving partial state.
-  - Proof: Security tests and log review show no credential exposure and sufficient account-neutral diagnostics for every failure path.
+  - Proof: Security tests, browser network review, and structured-log review show no credential, repository name, project name, URL, request-body, external asset, or analytics exposure and sufficient account-neutral diagnostics for every failure path.
 
 ## Verification Gate
 
 - [ ] Active-slice acceptance criteria pass.
 - [ ] Entry routing, authentication, workspace, repository-access grant, repository catalog, storage selection, project-linking, naming, post-creation dashboard routing, and connection-state tests pass.
-- [ ] GitHub integration and permission-boundary tests pass against the approved provider strategy.
-- [ ] Build, formatting, lint, and static checks pass.
+- [ ] Deterministic GitHub provider-contract tests pass in normal CI, and the tagged live GitHub App smoke test passes in the secret-backed staging environment.
+- [ ] `mix format --check-formatted`, `mix compile --warnings-as-errors`, `mix credo --strict`, `mix dialyzer`, `mix deps.audit`, `mix sobelow --config`, and `mix test` pass.
+- [ ] `npm --prefix assets ci`, `npm --prefix assets run test:e2e`, `MIX_ENV=prod mix assets.deploy`, and `MIX_ENV=prod mix release` pass.
 - [ ] Required desktop and mobile browser scenarios pass.
 - [ ] Light and dark theme, operating-system fallback, device-local preference, no-sync, keyboard-only, focus, contrast, non-color status, responsive text-fit, and layout-stability checks pass.
-- [ ] Credential, session, and failure-log review passes.
-- [ ] GDPR data contracts, retention rules, rights paths, processor boundaries, anonymisation proof, and required privacy review are complete.
+- [ ] PKCE, return validation, credential encryption and refresh, session rotation and expiry, provider revalidation, no-webhook behavior, and secret-isolation checks pass.
+- [ ] Hosted storage transaction, device readiness-receipt contract, idempotency, rollback, abort, concurrency, and no-partial-project checks pass.
+- [ ] GDPR data contracts, retention rules, rights paths, processor and transfer boundaries, no-analytics proof, and required privacy or legal review are complete.
+- [ ] Browser network and failure-log review proves that credentials, personal display values, external optional assets, and product analytics are absent.
 - [ ] New decisions and invalidated proof are written back.
 
 ## Blocked Decisions
 
-- Select the application runtime, UI approach, persistence system, deployment model, and Symphony boundary.
-- Define the registered `Orchestra-workflow` GitHub App technical integration within the approved `Metadata: read-only` permission boundary: repository identity, credential lifecycle, webhook behavior, return validation, organization-approval status detection, and session design.
-- Complete the device and hosted prerequisites and atomic project-storage initialization contract from `specs/05-project-storage-lifecycle/`.
-- Select a safe project-name validation and case-insensitive comparison strategy without changing the accepted display behavior.
-- Approve the slice GDPR processing inventory, retention, rights, processors, transfers, analytics boundary, and required reviews.
-- Define canonical build, formatting, lint, static-check, automated-test, integration-test, security-test, and browser-test commands.
+- Approve the proposed Slice 01 privacy contract and record the actual controller identity, processing purposes and lawful bases, retention, rights handling, processor roles, hosting regions, transfer safeguards, and required privacy or legal reviews.
 
 ## Progress Log
 
@@ -115,3 +115,10 @@ Release boundary:
 - Remaining: Resolve the listed architecture, integration, storage, privacy, and verification decisions before approval.
 - Failed checks: None; implementation has not started.
 - Spec updates: Moved local onboarding, hosted passwordless access, identity linking, storage lifecycle, and portability into separate ordered specifications without changing accepted behavior.
+
+### 2026-07-23 - Technical design checkpoint
+
+- Completed: Selected the Phoenix application foundation, GitHub App authorization and installation contract, protected session and credential boundaries, stable repository identity, storage adapter, Unicode name comparison, provider-neutral deployment, and canonical verification toolchain.
+- Remaining: Approve the proposed Slice 01 privacy contract before requirements can become `Approved` and implementation can start.
+- Failed checks: None; implementation has not started.
+- Spec updates: Removed the resolved engineering questions and retained one accountable privacy and legal blocker.

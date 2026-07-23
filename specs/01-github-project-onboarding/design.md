@@ -2,9 +2,11 @@
 
 ## Context
 
-SDD Orchestrator has no application runtime yet. OpenAI Symphony is the orchestration foundation, but the implementation language and the boundary between Symphony and the dashboard remain undecided.
+SDD Orchestrator has no application runtime yet. This slice establishes the first production application boundary as a single Elixir/Phoenix service with a Phoenix LiveView web interface and PostgreSQL persistence.
 
 This specification owns only the first GitHub-backed project-registration path. Local repositories, passwordless access, identity linking, storage lifecycle, and portability have separate specifications.
+
+OpenAI Symphony remains the orchestration foundation for later coding-agent work. Its language-independent specification is an architectural reference, while its experimental Elixir prototype is not imported as product code. Onboarding owns durable product and identity state; future agent execution must connect through a separate supervised orchestration boundary.
 
 ## Proposed Approach
 
@@ -27,65 +29,73 @@ This specification owns only the first GitHub-backed project-registration path. 
 17. Create the project, canonical repository connection, and selected storage mode in one transaction.
 18. Open the new project's dashboard and show its repository, storage mode, and connection state without modifying the repository or starting an agent.
 
-Exact protocols and storage schemas remain deferred until the technology update.
+Implement the flow with server-rendered LiveViews and explicit domain contexts. A dedicated GitHub provider adapter owns OAuth, GitHub App authentication, installation checks, repository pagination, token refresh, and provider error translation. A storage adapter owns availability and idempotent preparation so hosted initialization can commit in the database transaction and on-device initialization can be supplied by `specs/02-local-project-onboarding/` without coupling project registration to a worker implementation.
 
 ## Components Affected
 
-- Entry, GitHub sign-in, session restoration, and sign-out surfaces.
+- Elixir/Phoenix application runtime, release configuration, and PostgreSQL persistence.
+- Phoenix LiveView entry, GitHub sign-in, session restoration, sign-out, project-catalog, onboarding, and new-project dashboard surfaces.
 - Shared onboarding theme tokens, typography, responsive behavior, and accessible interaction states.
-- GitHub identity and authorization integration.
-- GitHub App repository-access check, grant screen, installation handoff, and return validation.
-- Personal workspace boundary.
-- Repository catalog and search.
-- Shared project-data storage selection from `specs/05-project-storage-lifecycle/`.
-- Project registration and naming.
-- Repository connection and status presentation.
-- Post-creation project-dashboard handoff.
+- `Accounts` context for GitHub identities, personal workspaces, credentials, and application sessions.
+- `GitHubIntegration` context for OAuth, GitHub App authentication, installation access, repository discovery, and provider status.
+- `Projects` context for project registration, repository connections, naming, catalogs, and connection state.
+- `ProjectStorage` boundary for shared storage selection, availability, preparation, and atomic hosted initialization from `specs/05-project-storage-lifecycle/`.
 - Credential storage, audit, diagnostics, and privacy controls.
-- Automated and browser verification for the end-to-end path.
+- ExUnit, Ecto sandbox, provider-contract, LiveView, security, accessibility, and browser verification.
+- OCI image and Phoenix release for deployment with an external PostgreSQL service.
 
 ## Data and Access Boundaries
 
-The logical domain requires:
+Use UUIDs for internal identities and keep provider identifiers and display values separate:
 
-- `UserContext`: the stable authenticated GitHub user identity.
-- `PersonalWorkspace`: the ownership boundary for projects and repository connections.
-- `Project`: the stable SDD Orchestrator project identity and editable display name.
-- `RepositoryConnection`: the provider-stable repository identity, display metadata, source type, and connection status.
-- `ProjectStorageMode`: the explicit device or hosted SDD-data boundary selected under `specs/05-project-storage-lifecycle/`.
-- `ClientThemePreference`: an optional current-device light or dark choice with no hosted identity, workspace, project, or analytics association.
-- `DataProcessingRecord`: the approved purpose, lawful basis, data categories, access, retention, deletion, rights behavior, processors, transfers, and required review for each processing activity.
+- `Account`: the internal authenticated subject and lifecycle state.
+- `GitHubIdentity`: the unique GitHub numeric user ID, current login, and optional avatar URL. Email is neither requested nor stored by this slice.
+- `PersonalWorkspace`: the one-to-one account ownership boundary for projects and repository connections.
+- `GitHubAuthorizationAttempt`: a short-lived single-use state digest, browser-flow nonce digest, encrypted PKCE verifier, intended return route, expiry, and consumption time.
+- `GitHubCredential`: encrypted user access and refresh tokens, provider expiry, granted permissions, and refresh state.
+- `ApplicationSession`: a digest of an opaque browser token, account, idle expiry, absolute expiry, last-used time, and revocation time.
+- `ProjectOnboardingAttempt`: short-lived server-side workflow state, selected repository metadata, selected storage mode, device-setup return state, and one idempotency key.
+- `Project`: the stable SDD Orchestrator project identity, editable display name, canonical comparison key, workspace, storage mode, and lifecycle state.
+- `RepositoryConnection`: provider `github`, stable GitHub numeric repository ID, mutable owner/name/URL/visibility metadata, installation scope, last validation time, and connected or disconnected state.
+- `HostedProjectStorage`: the hosted root initialized in the same database transaction as its project.
+- `DeviceStorageReceipt`: an opaque, expiring readiness receipt supplied by the local-device boundary; it does not grant repository or control-plane access.
+- `ClientThemePreference`: an optional current-device light or dark choice held only in browser-local storage and never represented by a server record.
+- `DataProcessingRecord`: the approved specification-level purpose, lawful basis, fields, access, lifecycle, rights behavior, processors, transfers, and review for each processing activity.
 
 Required boundaries:
 
 - Every project and repository connection belongs to one personal workspace.
-- Project names are unique by case-insensitive comparison only inside that workspace.
-- Repository connection identity is unique inside that workspace and independent from its mutable display metadata or remote URL.
+- Project names are enforced by a unique `(workspace_id, name_key)` database constraint.
+- Repository connections are enforced by a unique `(workspace_id, provider, provider_repository_id)` database constraint. Repository owner, name, URL, and installation ID are mutable access and display metadata, not identity.
 - Project identity is independent from its display name and repository display metadata.
 - Repository location and content remain independent from the selected project-data storage mode.
-- GitHub credentials and application sessions remain in a protected server-side or equivalent credential boundary.
-- The browser receives only the repository metadata needed for user selection and status display.
+- GitHub access tokens, refresh tokens, PKCE verifiers, client secrets, private keys, and application-session digests remain in the protected server boundary. Encrypted database fields use authenticated encryption with runtime-supplied keys and planned key rotation.
+- The browser receives only an opaque `HttpOnly`, `SameSite=Lax` application-session cookie plus authorized presentation data for the active workspace. The cookie is `Secure` outside local development, and JavaScript cannot read provider or session credentials.
+- Coding agents and future workers never receive GitHub user credentials, application-session credentials, or the GitHub App private key.
+- Repository catalogs are fetched on demand and are not persisted. Only metadata for the repository confirmed by the user is retained.
 - Repository content is outside the onboarding write boundary.
 - Lost provider access changes connection state without deleting project state.
 - Manual theme preference remains inside the current client storage boundary and is not sent to the control plane, identity provider, analytics, or other devices.
+- Product analytics is disabled for this slice. Operational and security events use internal correlation IDs, outcome classes, and minimum necessary timestamps; they exclude credentials, repository names, project names, URLs, and request bodies.
 - Every personal-data field and processing path must have an approved GDPR data contract before implementation.
 
 ## Interfaces
 
-- Entry interface: resolve session state, expose both product paths only to unauthenticated clients, and avoid conflating repository location with later agent execution location.
-- Theme interface: use the current operating-system preference when no local override exists, permit manual switching, restore only the current device's override, and preserve semantic roles and focus visibility in both themes.
-- GitHub identity interface: authenticate a stable provider identity within the approved `Metadata: read-only` repository-permission boundary.
-- Session interface: establish, restore, expire, revoke, and end authenticated access.
-- Project-catalog interface: show existing projects after workspace restoration and expose `Add project` without mutating project or repository state.
-- Repository-access grant interface: detect when no accessible `Orchestra-workflow` installation exists, explain the required GitHub-controlled access, open its public installation flow, represent pending organization approval with `Check again`, and accept only a validated return or refresh for the authenticated user.
-- Repository catalog interface: paginate and search every repository returned under granted access and return stable identity plus display metadata.
-- Repository-selection interface: expose one keyboard-operable selection model and distinct loading, no-match, empty, failure, and restricted-access states.
-- Storage-selection interface: reuse `Where should your project work be saved?`, the shared project-work explanation, `On this device` and `In my SDD Orchestrator account`, always-visible unavailable states, prerequisite setup actions, and the explicit-choice rule from `specs/05-project-storage-lifecycle/` before final confirmation. Device setup preserves the selected repository and onboarding state, returns to the same step after success, cancellation, or failure, and does not select a mode or create a project.
-- Project registration interface: enforce repository uniqueness, allocate a workspace-scoped name, and create the project and connection atomically.
-- Project naming interface: accept natural Unicode display text, validate case-insensitive workspace uniqueness, and rename without changing stable identities or deriving machine identity from the display value.
-- Connection-status interface: distinguish connected and disconnected provider state without exposing secrets.
-- Post-creation navigation interface: after the atomic creation succeeds, open the new project's dashboard with its repository, storage mode, and connection status; creation failure remains in onboarding without exposing a partial dashboard.
-- Privacy-governance interface: block schema and backend approval until each processing activity has its required data contract and review.
+- Web interface: Phoenix router and LiveViews expose the entry, project catalog, grant, repository picker, storage, confirmation, and project dashboard surfaces. Protected `on_mount` hooks resolve the server-side application session before protected content renders.
+- GitHub authorization interface: `/auth/github` creates a ten-minute authorization attempt, binds it to an opaque browser-flow cookie, and redirects with random `state` plus PKCE `S256`; `/auth/github/callback` consumes the state once, verifies the same browser flow, exchanges the code, resolves the stable GitHub user, creates or restores the workspace, rotates the application session, and rejects expired, replayed, mismatched, canceled, or failed returns.
+- Session interface: issue an opaque browser token whose digest is stored server-side, rotate it at authentication, expire it after 24 hours of inactivity or 30 days absolutely, revoke it on sign-out, and reject it before protected data is loaded. Provider-token refresh does not expose or replace the browser token.
+- Theme interface: an early local script reads the current device preference before first paint, falls back to `prefers-color-scheme`, applies the selected token set, and never sends the value to LiveView.
+- GitHub provider interface: a behaviour implemented with `Req` owns user authorization, identity retrieval, access-token refresh, accessible-installation discovery, repository pagination, pending-installation requests, and normalized provider errors. Requests use `Accept: application/vnd.github+json` and the pinned GitHub API version `2026-03-10`. Deterministic fakes implement the same behaviour in ordinary tests.
+- GitHub App interface: generate short-lived `RS256` app JWTs from the runtime private key only for app-authenticated operations such as pending installation requests. Backdate `iat` by 60 seconds for clock drift, keep `exp` under ten minutes, and use the configured client ID as `iss`. The installation return and any `installation_id` are hints until access is re-read with the authenticated user's token and matched to the active onboarding attempt.
+- Repository-access grant interface: use the registered `Orchestra-workflow` installation URL with a random one-time state value, represent a matched pending organization request with `Waiting for organization approval`, and re-run the same access check for the return and `Check again`.
+- Repository catalog interface: use the authenticated user's GitHub App user access token to paginate `/user/installations` and each accessible installation's repositories, deduplicate by numeric repository ID, then search the complete in-memory result without persisting the catalog.
+- Project-catalog interface: load projects only inside the restored workspace, include disconnected entries, and expose a non-mutating `Add project` transition into a new `ProjectOnboardingAttempt`.
+- Storage-selection interface: reuse the behavior from `specs/05-project-storage-lifecycle/` and call a `ProjectStorage` adapter with `availability/2`, `prepare/3`, and `abort/2`. Hosted preparation joins the project `Ecto.Multi`; device preparation accepts only a valid readiness receipt supplied by `specs/02-local-project-onboarding/`. A failed database transaction aborts prepared storage, and retries use the onboarding idempotency key.
+- Project registration interface: an `Ecto.Multi` locks the workspace naming boundary, validates the confirmed repository and storage preparation, inserts the project, repository connection, storage state, and consumed onboarding attempt, then returns the new project only after commit. A unique-conflict retry either returns the existing repository project or allocates the next default-name suffix.
+- Project naming interface: trim boundary whitespace, reject blank or control-character input, preserve the accepted display text, and derive `name_key` with Unicode `NFKC` normalization followed by Unicode default case folding. Default-name allocation retries the lowest available suffix after a unique violation; an edited-name conflict returns inline validation instead of silently changing the user's value.
+- Connection-status interface: revalidate access when the catalog or dashboard loads and when the user selects `Check again`. A missing installation, authorization failure, or failed refresh marks the connection disconnected without deleting the project; a transient provider outage shows an unavailable state without changing the last confirmed connection state.
+- Post-creation navigation interface: redirect to the new project dashboard only after the registration transaction commits; a failure keeps the resumable onboarding attempt and exposes no partial project.
+- Privacy-governance interface: block schema and backend approval until the proposed processing inventory, operator roles, retention, rights, processors, transfers, and required review are approved.
 
 ## Decisions and Tradeoffs
 
@@ -116,14 +126,14 @@ Required boundaries:
 ### Prototype As A Design Reference
 
 - Choice: Preserve the generated prototype under `design-references/01-github-project-onboarding/claude-design/` as a visual and interaction reference only; do not import its generated design-canvas runtime, `support.js`, inline implementation, mock state controls, or sample data into the application.
-- Reason: The prototype provides a useful UX direction before the application architecture is selected, but its runtime and shortcuts are not production decisions.
+- Reason: The prototype provides a useful UX direction, but its runtime and shortcuts are not production decisions.
 - Consequence: Implementation must recreate approved patterns in the selected application stack and prove them through the canonical browser checks. The original ZIP remains ignored and untracked; the exported reference is review evidence, not a project source of truth.
 
 ### Graphite And Teal Dual Theme
 
 - Choice: Use `Public Sans` with a system sans-serif fallback and a graphite-neutral, teal-primary visual system with light and dark modes.
 - Reason: The combination keeps operational information readable and gives primary actions a distinct identity without using a one-color dashboard.
-- Consequence: If `Public Sans` is used, its delivery must follow the approved privacy and security boundary rather than copying the prototype's Google Fonts request. Theme preference is device-local and never synchronized to the hosted identity.
+- Consequence: Self-host the approved `Public Sans` files as versioned application assets instead of copying the prototype's Google Fonts request. Theme preference is device-local and never synchronized to the hosted identity.
 
 Core light tokens:
 
@@ -148,7 +158,7 @@ Semantic tokens:
 
 - Choice: Store a manual light or dark choice only on the current device and use the current operating-system preference when no local choice exists.
 - Reason: Theme is a client presentation preference that should work before authentication and does not need hosted identity processing or cross-device synchronization.
-- Consequence: Sign-in and sign-out preserve the local choice, a different device follows its own local or operating-system state, and the exact client storage mechanism remains an implementation decision.
+- Consequence: Store the explicit value in browser `localStorage`, apply it before first paint, and listen to operating-system changes only while no explicit value exists. Sign-in and sign-out do not read or replace it.
 
 ### Compact Stateful Onboarding
 
@@ -160,13 +170,13 @@ Semantic tokens:
 
 - Choice: Show every repository returned under the user's granted access and link only the confirmed selection.
 - Reason: Non-technical users should not need repository URLs or terminal commands.
-- Consequence: Authorization scope, pagination, rate limits, organization policy, and large-catalog usability require explicit design.
+- Consequence: Fetch and paginate the complete authorized catalog through the GitHub App user token, deduplicate it by numeric repository ID, search it in memory, and keep retry, rate-limit, empty, and restricted states distinct.
 
 ### Registered Public GitHub App
 
 - Choice: Use the registered public GitHub App `Orchestra-workflow` at `https://github.com/apps/orchestra-workflow` for GitHub user authorization and repository installation access.
 - Reason: One public app identity gives users a GitHub-hosted authorization and installation surface for personal and organization repositories.
-- Consequence: The App uses the repository permission `Metadata: read-only`; no other repository permission or write access is approved for this onboarding scope. The App ID and client ID will be supplied through runtime configuration when the application skeleton exists. Their values, along with the client secret, private key, webhook secret, user tokens, and installation tokens, must not be committed. Token lifecycle, session handling, webhook behavior, return validation, and organization-approval detection are engineering-owned technical design work unless they require broader consent or change accepted product behavior.
+- Consequence: The App uses the repository permission `Metadata: read-only`; no other repository permission or write access is approved for this onboarding scope. Its exact callback is `${APP_ORIGIN}/auth/github/callback`, its setup URL is `${APP_ORIGIN}/github/setup`, OAuth during installation is disabled because sign-in happens first, and webhooks are inactive. App identifiers and secrets are runtime configuration and are never committed. The application revalidates access on use and through `Check again` and treats a pending request as the current user's only when its `requester.id` matches the authenticated GitHub user ID.
 
 ### Explicit Repository Access Grant
 
@@ -178,7 +188,7 @@ Semantic tokens:
 
 - Choice: After repository selection, show the shared `Where should your project work be saved?` step and require an explicit device or hosted choice before final confirmation.
 - Reason: Non-technical users need to understand that this choice affects where their project work is available and whether colleagues can collaborate, not the linked repository or agent location.
-- Consequence: Final confirmation shows repository, project name, and storage mode. Project creation remains blocked until the selected mode's prerequisites and atomic initialization contract are satisfied through `specs/05-project-storage-lifecycle/`. Device setup returns to the same step with the selected repository and onboarding state preserved; successful setup changes availability without choosing for the user, while cancellation or failure creates no project.
+- Consequence: Final confirmation shows repository, project name, and storage mode. The hosted adapter initializes storage in the registration transaction; the device adapter requires a valid ready receipt before that transaction. Device setup remains owned by `specs/02-local-project-onboarding/`, returns to the same attempt, and never chooses a mode or creates a project implicitly.
 
 ### One Project Per Repository
 
@@ -196,43 +206,130 @@ Semantic tokens:
 
 - Choice: Allow spaces and Unicode in project display names and preserve the user's display text instead of forcing lowercase or slug conversion.
 - Reason: BA, PO, PM, and international users should be able to name projects in familiar language, while stable project and repository identities already serve machine requirements.
-- Consequence: Project names cannot be used directly as identifiers, paths, or URLs. Technical design must choose a safe validation and comparison strategy without changing the accepted display behavior.
+- Consequence: Project names are never used as identifiers, paths, or URLs. A separate `NFKC`-normalized, Unicode-case-folded comparison key and a workspace unique constraint enforce case-insensitive uniqueness without rewriting the stored display value.
 
 ### Disconnected Rather Than Deleted
 
 - Choice: Keep a project visible when GitHub access is lost.
 - Reason: Authorization and provider availability are recoverable connection states, not project existence.
-- Consequence: Access must be revalidated and stale credentials must not be used or exposed.
+- Consequence: Access is revalidated at protected repository-dependent reads and on explicit retry. Confirmed authorization loss marks the connection disconnected; transient GitHub failure does not overwrite the last confirmed state, and stale credentials are never passed to a worker or browser.
 
-### Technology-Neutral First Specification
+### Phoenix Application Foundation
 
-- Choice: Keep the product and security contracts independent from a selected stack.
-- Reason: No runtime or Symphony integration strategy has been approved.
-- Consequence: Implementation remains blocked until architecture and canonical verification commands are recorded through `update-spec`.
+- Choice: Bootstrap one Elixir 1.20 and Erlang/OTP 29 application with Phoenix 1.8, Phoenix LiveView 1.2, Ecto SQL 3.14, Bandit, and PostgreSQL. Pin exact patch versions in `mise.toml` and dependency lockfiles when the skeleton is created.
+- Reason: The product needs a server-owned realtime workflow, durable transactions, supervised integrations, and later orchestration without requiring a separate frontend application for the first slice.
+- Consequence: Keep `Accounts`, `GitHubIntegration`, `Projects`, and `ProjectStorage` as explicit contexts inside one Phoenix application. Do not introduce an umbrella, separate API, background-job system, or client-side state framework until an approved slice needs one.
+
+### LiveView And Local Assets
+
+- Choice: Build the responsive web interface with HEEx function components and LiveView, Tailwind CSS, local `Public Sans` files, and locally bundled Lucide icons.
+- Reason: One server-rendered interface keeps authentication and onboarding state inside the protected application boundary while supporting the required interactive states.
+- Consequence: JavaScript hooks are limited to device-local theme handling and browser behavior that LiveView cannot provide directly. The application makes no font, icon, analytics, or other optional third-party browser request.
+
+### Symphony Orchestration Boundary
+
+- Choice: Keep the Phoenix application as the product control plane and treat the Symphony specification as the future orchestration contract. Do not import or fork the experimental Symphony prototype in Slice 01.
+- Reason: Symphony's prototype demonstrates agent supervision and reconciliation, but onboarding needs durable identity and project state and has no agent-execution responsibility.
+- Consequence: Slice 01 adds no Symphony runtime dependency and starts no agent. A later approved slice may place orchestration in a supervised OTP application or separate service behind durable commands and events; it must not read GitHub user tokens or browser sessions.
+
+### GitHub Authorization And Token Lifecycle
+
+- Choice: Implement GitHub App user authorization directly through a narrow `Req` adapter using random state, PKCE `S256`, one exact callback route, and provider-reported token expiries.
+- Reason: GitHub App authorization, installation access, refresh, and pending-organization behavior need one explicit provider contract rather than generic social-login assumptions.
+- Consequence: Store only a state digest and encrypted PKCE verifier, consume each return once, refresh an expiring user token under a database lock, and retry one provider request after refresh. A failed refresh or confirmed authorization loss revokes the credential and disconnects affected repository connections without deleting projects.
+
+### Installation Validation Without Webhooks
+
+- Choice: Disable GitHub App webhooks for this slice and determine access through authenticated reads on onboarding, catalog/dashboard access, and `Check again`.
+- Reason: Slice 01 does not need event-driven repository mutation or background synchronization, and polling only at user-driven boundaries avoids an unnecessary public ingestion surface.
+- Consequence: Use a short-lived app JWT only to inspect installation requests. Never trust setup-return parameters by themselves; accept access only after the authenticated user's installations and repositories contain the returned selection. A later feature that needs timely provider events must specify webhook URL ownership, signature verification, replay protection, event retention, and failure recovery before enabling webhooks.
+
+### Protected Credentials And Application Sessions
+
+- Choice: Encrypt GitHub tokens and PKCE verifiers with `Cloak.Ecto` authenticated encryption, sign app JWTs with `Joken`, and use revocable opaque application sessions whose raw token exists only in a protected cookie.
+- Reason: Provider credentials need key rotation and must remain isolated from the browser application, logs, local workers, and coding agents.
+- Consequence: Supply encryption keys, `SECRET_KEY_BASE`, GitHub client secret, and GitHub private key only through runtime secrets. Session tokens are rotated at sign-in, expire after 24 hours idle or 30 days absolute, and are revoked on sign-out. Token refresh, app-JWT generation, and sensitive fields use redacted structured logging.
+
+### Stable GitHub Repository Identity
+
+- Choice: Use GitHub's numeric repository ID as the provider-stable identity and treat installation ID, owner, name, visibility, and URL as refreshable metadata.
+- Reason: Repository names, owners, URLs, and installation scope can change without creating a different repository.
+- Consequence: Enforce one `(workspace_id, github, repository_id)` connection, update display metadata after validated reads, and preserve the same project across renames and transfers when the authenticated user still has access.
+
+### Atomic Storage Preparation
+
+- Choice: Make storage readiness an idempotent prerequisite of the project-registration transaction. Hosted storage contributes database operations to the same `Ecto.Multi`; device storage contributes a validated readiness receipt created by the local-device slice.
+- Reason: Project registration must not expose a project, repository connection, or storage selection that only partly committed, while device setup is a separate trust and runtime boundary.
+- Consequence: The onboarding attempt supplies one idempotency key. A failed transaction aborts prepared storage and remains retryable. Slice 01 implements the hosted adapter and the shared behaviour; `specs/02-local-project-onboarding/` implements device setup and the production device adapter. The coordinated first release remains blocked until both adapters pass the shared contract.
+
+### Unicode Name Comparison
+
+- Choice: Preserve the validated display name and derive a separate comparison key with Unicode `NFKC` normalization followed by Unicode default case folding.
+- Reason: Machine uniqueness must not turn human-facing names into slugs or make comparison dependent on database collation defaults.
+- Consequence: Enforce the key with a database unique constraint, lock and retry default suffix allocation under concurrency, and maintain representative Unicode and case tests when the runtime or database Unicode version changes.
+
+### No Product Analytics In Slice 01
+
+- Choice: Do not collect product analytics for entry, GitHub authorization, repository discovery, storage selection, or project creation.
+- Reason: Analytics is not required to deliver or verify onboarding and would introduce another processing purpose before the product has an approved anonymisation pipeline.
+- Consequence: Verification rejects analytics requests, events, identifiers, and metrics. Minimum operational and security logs remain governed personal data and require the privacy approval below.
+
+### Proposed Privacy Contract
+
+- Choice pending approval: The operator of the hosted SDD Orchestrator service is controller for the identity, session, selected repository metadata, workspace, project, and operational-security records it receives. GitHub governs its own platform processing, while selected hosting, database, backup, and logging vendors act only under recorded roles and agreements.
+- Purpose and basis pending approval: Core records are necessary to provide the user-requested hosted service; minimum security records rely on a documented legitimate-interest assessment. No record is reused for analytics, advertising, model training, or unrelated product improvement.
+- Lifecycle pending approval: Authorization attempts become unusable after ten minutes and are deleted within 24 hours; abandoned onboarding attempts are deleted after 24 hours; expired or revoked sessions are deleted within 24 hours; and operational-security logs are deleted after 30 days. Keep encrypted provider credentials and confirmed project metadata only while the connected account or project requires them. An hourly supervised pruner uses a PostgreSQL advisory lock so cleanup remains idempotent across application instances; encrypted rolling backups expire within 35 days, and processor deletion follows the approved contract.
+- Access and rights pending approval: Restrict production access to the authenticated user and authorized operations roles, exclude coding agents, and provide verified access, correction, erasure, restriction, objection, and portability handling for applicable records.
+- Review pending approval: Record the actual controller identity, processor list, hosting regions, cross-border safeguards, retention enforcement, incident path, and whether a DPIA or other formal review is required before production processing.
+
+### Portable Deployment
+
+- Choice: Package a Phoenix release in an OCI image generated from the Phoenix release tooling, run it with an external PostgreSQL service, and keep deployment provider-neutral.
+- Reason: The personal project needs one reproducible artifact that can run locally or in a hosted environment before cloud-specific operations are selected.
+- Consequence: Local HTTP uses port `4000`. Runtime configuration includes `APP_ORIGIN`, `PORT`, `DATABASE_URL`, `SECRET_KEY_BASE`, field-encryption keys, `GITHUB_APP_ID`, `GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET`, `GITHUB_APP_PRIVATE_KEY`, `GITHUB_APP_SLUG=orchestra-workflow`, and `GITHUB_API_VERSION=2026-03-10`; callback and setup URLs are derived from `APP_ORIGIN`.
+
+### Canonical Verification Toolchain
+
+- Choice: Use ExUnit and Ecto sandbox tests, Mox/Bypass provider-contract tests, Phoenix LiveView tests, Playwright browser tests, and axe accessibility checks.
+- Reason: Provider behavior, transaction safety, responsive interaction, and accessibility require different proof layers without making normal CI depend on a live GitHub account.
+- Consequence: The application-skeleton task must make these commands canonical:
+  - `mise install`
+  - `docker compose up -d postgres`
+  - `mix setup`
+  - `mix phx.server`
+  - `mix format --check-formatted`
+  - `mix compile --warnings-as-errors`
+  - `mix credo --strict`
+  - `mix dialyzer`
+  - `mix deps.audit`
+  - `mix sobelow --config`
+  - `mix test`
+  - `npm --prefix assets ci`
+  - `npm --prefix assets run test:e2e`
+  - `MIX_ENV=prod mix assets.deploy`
+  - `MIX_ENV=prod mix release`
+- Consequence: Add a `mix check` alias for the standard formatting, compilation, lint, and test loop. Normal CI uses the deterministic GitHub adapter; a tagged live GitHub App smoke test runs only in a secret-backed staging environment before release.
 
 ## Risks
 
-- Broad GitHub permissions could exceed the feature's needs. Select the minimum model that still supports complete authorized discovery and disclose its scope.
-- Repository identity based on names or URLs can break after renames or transfers. Use a provider-stable canonical identifier.
-- Concurrent creation or rename can allocate duplicate names. Enforce uniqueness at the persistence boundary and retry suffix allocation.
-- Name comparison can differ across runtimes or storage systems. Select and test one canonical strategy without rewriting accepted display text.
+- GitHub App permission drift could exceed the approved boundary. Assert `Metadata: read-only` in configuration and staging release checks and fail closed when additional permissions are required.
+- GitHub return parameters can be replayed or attached to the wrong user. Bind short-lived state to the same browser flow, consume it once, and re-read access before accepting it.
+- Repository names, owners, URLs, and installations can change. Keep numeric repository identity separate and refresh display metadata only after an authenticated read.
+- Concurrent creation or rename can allocate duplicate names. Enforce database uniqueness and retry default-name suffix allocation inside the registration boundary.
+- Unicode behavior can change across runtime or database upgrades. Pin the application comparison algorithm and rerun representative normalization and case tests before upgrading.
 - GitHub outages, rate limits, SSO, and organization policy can interrupt onboarding. Preserve consistent state and expose actionable recovery.
-- Credentials can leak through browser payloads, logs, analytics, or diagnostics. Keep them in the accepted credential boundary and test every failure surface.
+- Access changes cannot arrive through webhooks in this slice. Revalidate before repository-dependent work and show the last confirmed state separately from transient provider availability.
+- Credentials can leak through browser payloads, logs, or diagnostics. Keep them in encrypted server fields, redact structured events, and test every failure surface.
 - Stale, expired, or revoked sessions can expose catalog data or create redirect loops. Resolve session state before protected rendering and test direct navigation, expiry, revocation, and sign-out transitions.
+- Device preparation and database registration cross a process boundary. Require idempotent receipts, abort failed preparation, reconcile retries, and keep the first-release gate blocked until the production device adapter proves the shared contract.
 - A non-technical user may confuse GitHub authentication with agent-provider authentication. Keep those concepts and statuses separate.
 - Prototype behavior can silently become product behavior. Do not adopt its forced lowercase default names, letters-and-numbers-only validation, always-new-project routing, non-functional local-path toast, or prototype-only controls without an accepted specification update.
-- Loading `Public Sans` from Google Fonts would create an external browser request and potential personal-data processing. Select an approved self-hosted or otherwise governed delivery path before implementation.
+- An accidental external font, icon, or analytics request would violate the browser-data boundary. Test the network allowlist and serve approved assets locally.
 - Theme and responsive variants can drift into different behavior. Test the same actions, state meaning, keyboard order, focus, and text fit across both themes and target viewports.
-- Personal data can escape its lifecycle through logs, backups, analytics, or processors. Include every copy and transfer in the approved data contract.
+- Personal data can escape its lifecycle through logs, backups, or processors. Include every copy and transfer in the approved data contract and deletion evidence.
+- Framework, dependency, and provider API versions will change. Pin exact versions, keep provider behavior behind one adapter, and review release notes before upgrades.
 - The separate GitHub and local implementation slices can drift at their shared entry and dependency boundaries. The coordinated first-release gate must verify both complete paths from the same entry surface.
 
 ## Open Questions
 
-- How are token and revocation lifecycle, webhook behavior, return validation, and organization-approval status detection implemented within the approved `Metadata: read-only` permission boundary?
-- How are GitHub and application sessions protected, refreshed, revoked, and isolated from coding agents?
-- Which stable repository identifier and transfer rules enforce uniqueness?
-- Which device and hosted prerequisites and atomic initialization contract from `specs/05-project-storage-lifecycle/` are required before project creation commits?
-- Which validation and canonical comparison strategy safely implements natural display names and case-insensitive uniqueness?
-- Which GDPR processing contracts and reviews apply to identity, repository metadata, projects, logs, support, security, and analytics?
-- Which runtime, persistence, UI, deployment, and Symphony boundary should be selected?
-- Which automated, integration, security, and browser commands form the verification gate?
+- Is the proposed Slice 01 privacy contract approved, including the actual controller identity, service-delivery and security purposes and bases, retention periods, rights handling, processor roles, hosting regions, transfer safeguards, and required privacy or legal reviews?

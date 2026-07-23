@@ -12,7 +12,7 @@ Represent each feature as a durable lifecycle record connected to versioned requ
 
 Keep requirement guidance and readiness assessment separate from execution authorization. Starting development creates a run against one approved specification revision and isolated branch. The run emits durable progress and evidence events. A blocking product question pauses the run until an authorized answer is written back to the specification, after which the same run resumes. Successful agent work ends in human review. Authorized approval moves the feature to `Done`; authorized rejection records feedback and returns it to `In development` so work can resume.
 
-Treat screenshots, test results, branch metadata, and preview links as typed evidence rather than unstructured agent claims. Keep the technical stack open until product requirements are complete.
+Treat screenshots, test results, branch metadata, and preview links as typed evidence rather than unstructured agent claims. Build the product-facing lifecycle inside the Phoenix control plane selected by `specs/01-github-project-onboarding/`; keep the worker, run, and Symphony orchestration protocols open until this feature's product requirements are complete.
 
 ## Components Affected
 
@@ -121,11 +121,11 @@ Required boundaries:
 - Reason: Users need a way to test completed work without granting the first workflow authority to merge or deploy to production.
 - Consequence: Merge, release approval, production deployment, preview lifetime, and cleanup require later specifications.
 
-### Technology-Neutral Product Draft
+### Shared Phoenix Control Plane
 
-- Choice: Do not select the application framework or Symphony integration boundary until the product questions are resolved.
-- Reason: Framework selection should follow the agreed board, run, evidence, resume, deployment, and notification behavior.
-- Consequence: Technical design remains blocked, but engineering questions stay here rather than being presented as missing product requirements.
+- Choice: Reuse the Phoenix/LiveView/PostgreSQL control-plane foundation selected by `specs/01-github-project-onboarding/` and do not import the experimental Symphony prototype as product code.
+- Reason: The application framework is a shared project decision, while run supervision, worker transport, evidence, resume, and reconciliation still need feature-specific design.
+- Consequence: Board and durable product state remain in the Phoenix control plane. Technical design is still blocked on the orchestration and worker contracts below, not on another framework selection.
 
 ## Risks
 
@@ -143,7 +143,7 @@ Required boundaries:
 
 ## Open Questions
 
-- Which application framework and Symphony boundary best support durable runs, realtime board state, local and remote workers, and a web dashboard?
+- Which durable command, event, and supervision boundary reuses or reimplements Symphony behavior for local and remote agent runs behind the selected Phoenix control plane?
 - Which persistent state model and transition protocol make readiness, dispatch, blocking, resume, verification, and completion idempotent and auditable?
 - Which worker protocol and trust model support local and remote execution without exposing control-plane or provider credentials?
 - How are specification revisions and accepted blocking answers bound to a resumable agent context?

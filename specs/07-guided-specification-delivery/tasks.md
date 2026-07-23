@@ -75,7 +75,7 @@ Deferred after this slice:
 ## Blocked Decisions
 
 - Resolve the product questions about preview approval, notification channels, and mandatory evidence.
-- Select the application framework and the boundary for reusing, extending, or reimplementing OpenAI Symphony.
+- Define the durable orchestration boundary for reusing or reimplementing OpenAI Symphony behavior behind the selected Phoenix control plane.
 - Define persistent lifecycle, event, idempotency, checkpoint, and reconciliation contracts.
 - Define local and remote worker trust, transport, isolation, credential, and agent-provider boundaries.
 - Define specification revision, blocking-answer write-back, and resumable agent-context contracts.
@@ -88,6 +88,6 @@ Deferred after this slice:
 ### 2026-07-23 - Initial product-loop draft
 
 - Completed: Captured the guided specification, readiness, explicit start, autonomous implementation, blocking-question resume, evidence, preview, and notification workflow.
-- Remaining: Resolve the listed product decisions before transitioning to technical design.
+- Remaining: Resolve the listed product decisions before transitioning to feature-specific orchestration and worker design.
 - Failed checks: None; implementation has not started.
-- Spec updates: Created the core product workflow specification and limited its first executable slice to one configured agent path.
+- Spec updates: Created the core product workflow specification, limited its first executable slice to one configured agent path, and recorded the shared Phoenix control-plane decision from Slice 01.

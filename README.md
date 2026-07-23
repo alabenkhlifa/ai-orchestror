@@ -49,7 +49,7 @@ The detailed product contract for this loop starts in `specs/07-guided-specifica
 
 Symphony is a foundation, not a fixed architecture or product boundary. The project may reuse, extend, replace, or reimplement any part when approved SDD Orchestrator requirements call for different behavior. SDD Orchestrator will focus specifically on specifications, approved slices, verification gates, and decision write-back.
 
-The implementation language and the decision to fork, extend, or reimplement the Symphony reference remain open until they are resolved through the SDD workflow.
+The first application boundary is selected in `specs/01-github-project-onboarding/`: an Elixir/Phoenix control plane with LiveView and PostgreSQL. Slice 01 does not import or fork the experimental Symphony prototype. Later agent-delivery specifications will define whether the orchestration boundary reuses or reimplements Symphony behavior behind durable control-plane commands and events.
 
 ## Additional Inspiration
 
@@ -82,8 +82,8 @@ The canonical project skills live under `.agents/skills/` and follow the Agent S
 - Git repository initialized on `main` with the initial project bootstrap committed locally.
 - Shared Codex and Claude Code instructions added.
 - `add-spec`, `update-spec`, and `implement-spec` installed as shared Codex and Claude skills; `update-spec` now includes progress-log discipline learned from this project's specification work.
-- OpenAI Symphony selected as the implementation foundation; no reference code has been imported and no implementation language has been selected yet.
-- Project onboarding is organized as six ordered specifications under `specs/`: GitHub onboarding, local onboarding, hosted passwordless access, GitHub identity linking, project storage lifecycle, and project portability. All remain draft and blocked pending their recorded decisions and technology choices.
+- OpenAI Symphony selected as the orchestration foundation; no reference code has been imported. Slice 01 selects Elixir/Phoenix, LiveView, and PostgreSQL for the product control plane.
+- Project onboarding is organized as six ordered specifications under `specs/`: GitHub onboarding, local onboarding, hosted passwordless access, GitHub identity linking, project storage lifecycle, and project portability. All remain draft and blocked by their recorded outstanding decisions; Slice 01 now has a technical design and one remaining privacy-approval blocker.
 - No dashboard, service, worker runtime, provider integration, or application toolchain implemented yet.
 
 ## Documentation Boundaries
@@ -99,8 +99,8 @@ The canonical project skills live under `.agents/skills/` and follow the Agent S
 The detailed discussion still needs to define:
 
 - The unresolved product questions recorded across the ordered project specifications.
-- Whether to fork or extend Symphony's Elixir reference implementation or implement its specification in another runtime.
-- The V1 boundary between the dashboard, control service, and workers.
+- The feature-specific boundary for reusing or reimplementing Symphony behavior behind the selected Phoenix control plane.
+- The V1 protocol and trust boundary between the control plane and local or remote workers.
 - Repository discovery and connection behavior.
 - Local and remote worker communication and isolation.
 - User authentication and provider credential handling.

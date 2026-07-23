@@ -50,7 +50,7 @@ A BA, PO, PM, developer, or other project contributor can sign in with GitHub, f
 - Repository-derived default names, case-insensitive workspace uniqueness, lowest-available numeric suffixes, and editing during or after onboarding.
 - Persistent project visibility with a disconnected status when GitHub access is lost.
 - Actionable errors for non-technical users.
-- GDPR data contracts and security controls for identity, session, repository, project, log, and analytics data introduced by this feature.
+- GDPR data contracts and security controls for identity, session, repository, project, and operational-security data introduced by this feature.
 
 ## Out of Scope
 
@@ -61,7 +61,7 @@ A BA, PO, PM, developer, or other project contributor can sign in with GitHub, f
 - Project export and import, defined in `specs/06-project-portability/`.
 - Collaboration workflows, AI-provider setup, specification workflows, and agent execution.
 - Linking multiple repositories to one project or creating multiple projects for the same repository in one personal workspace.
-- Selecting the application language, framework, database, deployment model, or Symphony integration strategy.
+- Product analytics for this onboarding slice.
 
 ## Business Rules
 
@@ -117,7 +117,8 @@ A BA, PO, PM, developer, or other project contributor can sign in with GitHub, f
 - When GitHub access is lost, the project remains visible and its connection becomes disconnected.
 - Authentication credentials, repository credentials, and session secrets must never be displayed after acceptance or exposed in client payloads, logs, analytics, or project data.
 - Personal data introduced by this feature requires an approved purpose, lawful basis, access boundary, retention, deletion, rights behavior, processor boundary, transfer assessment, and required privacy review before implementation.
-- Retained analytics must be aggregate and genuinely anonymous; pseudonymous or linkable identifiers remain personal data.
+- This slice must not emit or retain product-analytics events, identifiers, or onboarding metrics.
+- Minimum operational and security logs are governed personal data, not analytics, and must follow the approved processing and retention contract.
 
 ## Acceptance Criteria
 
@@ -161,8 +162,8 @@ A BA, PO, PM, developer, or other project contributor can sign in with GitHub, f
 - Given repository access later returns, when the connection is revalidated, then the same project can return to connected.
 - Given onboarding completes, when repository state is inspected, then repository content and settings are unchanged and no AI agent has started.
 - Given any onboarding operation fails, when it ends, then no duplicate workspace, project, or repository connection exists.
+- Given any Slice 01 workflow is used, when stored and transmitted records are inspected, then no product-analytics event, identifier, or onboarding metric exists.
 
 ## Open Questions
 
 - Which controller and processor roles, purposes, lawful bases, retention periods, rights workflows, subprocessors, transfers, and privacy reviews apply to this slice?
-- Which anonymous aggregate metrics are necessary for GitHub onboarding, what aggregation thresholds prevent singling out, and how long is each retained?
