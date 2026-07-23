@@ -28,6 +28,21 @@ The current direction includes:
 
 This direction is not an approved V1 specification. Product discovery is still in progress.
 
+## Core Product Loop
+
+In simple terms, SDD Orchestrator lets developers and non-developers use development AI agents running on their laptop or on another machine.
+
+1. A user creates a feature on a specification-focused Kanban board.
+2. The product explains the required format, identifies missing or unclear information, and shows what prevents the feature from being ready for development.
+3. When the requirements are sufficient, the feature becomes development-ready and the user can explicitly start development.
+4. An authorized AI coding agent works from an isolated branch, implements the feature, runs tests, and captures screenshots when the project and environment support them.
+5. Progress, test results, screenshots, and other evidence are attached to the feature activity and comments.
+6. If the agent needs a product decision, it marks the work blocked, tags the relevant users, asks a focused question, and preserves its current state.
+7. After an accepted answer is written back to the specification, the agent resumes until the work and verification finish.
+8. When supported, the branch is deployed to a preview environment and the user receives a test link. The product then notifies the user that the run has finished and shows its result and evidence.
+
+The detailed product contract for this loop starts in `specs/07-guided-specification-delivery/`.
+
 ## Implementation Foundation
 
 [OpenAI Symphony](https://github.com/openai/symphony) is the implementation foundation for SDD Orchestrator. Its language-independent specification and Elixir reference implementation provide a starting point for isolated workspaces, coding-agent execution, work reconciliation, retries, and operational visibility.

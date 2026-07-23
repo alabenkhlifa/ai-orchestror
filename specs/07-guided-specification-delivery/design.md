@@ -1,0 +1,153 @@
+# Guided Specification And Delivery Design
+
+## Context
+
+SDD Orchestrator exists to move feature work from requirements to verified implementation while keeping agent behavior, stop conditions, progress, decisions, and proof visible. The current specifications establish repository, identity, storage, and portability boundaries but do not yet define the core product loop.
+
+OpenAI Symphony provides a language-independent orchestration specification and an experimental Elixir reference implementation for isolated workspaces, agent execution, reconciliation, retries, blocked state, and operational visibility. This feature adapts those capabilities to a specification-first workflow controlled from a project board.
+
+## Proposed Approach
+
+Represent each feature as a durable lifecycle record connected to versioned requirements, readiness findings, an approved implementation slice, agent runs, blocking questions, evidence, preview deployments, and notifications. Present the lifecycle through five first-release board columns: `Draft`, `Ready for development`, `In development`, `Ready for review`, and `Done`. Treat `Blocked` as an additional visible status so an interrupted run keeps its lifecycle position.
+
+Keep requirement guidance and readiness assessment separate from execution authorization. Starting development creates a run against one approved specification revision and isolated branch. The run emits durable progress and evidence events. A blocking product question pauses the run until an authorized answer is written back to the specification, after which the same run resumes. Successful agent work ends in human review. Authorized approval moves the feature to `Done`; authorized rejection records feedback and returns it to `In development` so work can resume.
+
+Treat screenshots, test results, branch metadata, and preview links as typed evidence rather than unstructured agent claims. Keep the technical stack open until product requirements are complete.
+
+## Components Affected
+
+- Project feature board and feature detail view.
+- Guided requirement authoring and readiness assessment.
+- Specification revision and approval boundary.
+- Agent-run control and status presentation.
+- Local and remote worker dispatch boundary.
+- Branch and workspace isolation.
+- Blocking-question, tagging, and resume workflow.
+- Feature activity, comments, and evidence storage.
+- Test and screenshot evidence collection.
+- Branch-preview deployment integration.
+- Human review and approval.
+- In-product and future external notifications.
+- Audit, privacy, retention, and secret-redaction controls.
+
+## Data and Access Boundaries
+
+- `Feature`: the stable project-scoped unit shown on the board, with its recorded creator and an optional assigned authorized participant.
+- `SpecificationRevision`: the recorded requirements and acceptance agreement used by readiness and execution.
+- `ReadinessAssessment`: visible blocking findings, active non-blocking suggestions, dismissed non-blocking suggestions, and satisfied product information for one revision.
+- `AgentRun`: one authorized attempt to implement one approved revision and slice.
+- `BlockingQuestion`: one focused product decision that pauses a run and identifies its intended responders.
+- `ActivityEntry`: an ordered user-visible record of progress, comments, questions, answers, evidence, and outcomes.
+- `Evidence`: a typed test result, screenshot, branch reference, verification result, or other approved proof.
+- `PreviewDeployment`: a non-production branch deployment and its lifecycle.
+- `ReviewDecision`: an authorized approval or feedback-based rejection for one completed run.
+- `Notification`: an outcome or action-required message for authorized recipients.
+
+Required boundaries:
+
+- Every feature, revision, run, question, evidence item, preview, and notification belongs to one project.
+- Only authorized project participants can read project content, start runs, answer questions, or review evidence.
+- Agents receive the minimum project, repository, specification, and credential capabilities required for the run.
+- Worker and provider secrets remain outside agent-readable requirements, comments, evidence, and analytics.
+- A run is bound to one immutable starting specification revision; accepted answers create recorded updates and an auditable resume point.
+- Local and hosted data follow the authoritative storage mode and lifecycle defined by `specs/05-project-storage-lifecycle/`.
+
+## Interfaces
+
+- Board interface: show the five lifecycle columns, creator, optional assignment, readiness, active run, completion outcome, and a visible `Blocked` status on an interrupted feature without moving it to another column. Let an authorized project participant select any authorized participant for `Assigned` or use `Assign to me`. Do not use free dragging to change lifecycle state; expose the gated workflow action available to an authorized user.
+- Specification guidance interface: describe required information, classify visible findings as blocking or non-blocking, and allow only non-blocking suggestions to be dismissed.
+- Start interface: remain unavailable while any blocker exists, then authorize one ready feature revision and create one run without duplicate dispatch.
+- Worker interface: start, observe, pause, resume, cancel, and recover a run on a configured local or remote worker.
+- Agent interface: provide approved scope and receive structured progress, questions, and evidence without exposing unrelated credentials.
+- Question interface: pause the run, record one focused question, tag the feature's assigned participant when present or its creator otherwise, and resume only after accepted specification write-back.
+- Evidence interface: validate, store, redact, and present typed proof with run and branch provenance.
+- Preview interface: request, observe, expire, and link a non-production branch deployment when supported.
+- Review interface: present the completed run and its evidence in `Ready for review`, accept a decision only from an authorized user, move an approved feature to `Done`, or record rejection feedback and return it to `In development`.
+- Notification interface: deliver action-required and completion events without leaking project content to unauthorized recipients.
+
+## Decisions and Tradeoffs
+
+### Fixed First-Release Board
+
+- Choice: Use `Draft`, `Ready for development`, `In development`, `Ready for review`, and `Done` as the five first-release columns, with `Blocked` shown as a status rather than a column.
+- Reason: The board should communicate the feature's place in the specification and delivery workflow while preserving that context when progress is temporarily blocked.
+- Consequence: A blocked development run remains in `In development` and exposes its reason.
+
+### Gated Lifecycle Transitions
+
+- Choice: Move cards only through authorized workflow actions and validated outcomes; do not allow free drag-and-drop transitions.
+- Reason: Board movement must not bypass readiness findings, explicit development authorization, verification evidence, or human review.
+- Consequence: The board presents state and available actions, while the lifecycle service validates every transition and rejects direct state changes that do not satisfy the corresponding gate.
+
+### Specification Readiness Before Execution
+
+- Choice: Separate AI readiness assessment from explicit user authorization, prohibit overrides of blocking findings, and permit authorized users to dismiss only non-blocking suggestions.
+- Reason: Non-technical users need guidance, but the product must not start costly or consequential work merely because an automated assessment changed.
+- Consequence: `Start development` remains unavailable until every blocker is resolved. Readiness findings require a visible blocking classification, suggestion dismissals must not be treated as resolved blockers, readiness and authorization remain distinct durable states, and the starting revision must be recorded.
+
+### Durable Human-In-The-Loop Resume
+
+- Choice: Pause on unresolved product decisions, write accepted answers back to the specification, and resume the same run.
+- Reason: Agent questions must improve the durable agreement rather than disappear in comments or require restarting completed work.
+- Consequence: Runs need persistent checkpoints, question ownership, revision linkage, and safe resume semantics.
+
+### Blocking Question Routing
+
+- Choice: Record a creator and optional assigned participant on each feature. Route a blocking question to the assigned participant when present and fall back to the creator when unassigned.
+- Reason: Responsibility may move away from the person who created the story, while every story still needs a deterministic person to notify.
+- Consequence: Question routing requires access-checked `Creator` and optional `Assigned` fields.
+
+### Project-Wide Story Assignment
+
+- Choice: Allow any authorized project participant to assign a story to any other authorized participant in that project, with an `Assign to me` shortcut.
+- Reason: Story responsibility should not depend on the creator or require a separate assignment role in the first release.
+- Consequence: Assignment selection must be limited to current authorized project participants, and `Assign to me` resolves to the current participant.
+
+### Evidence-Based Completion
+
+- Choice: Treat tests, screenshots, branch state, and preview links as typed evidence attached to the feature.
+- Reason: Users need inspectable proof rather than an unsupported agent completion message.
+- Consequence: Each project type needs an approved verification contract, and unavailable evidence must be reported honestly.
+
+### Human Review Before Done
+
+- Choice: End successful agent execution in `Ready for review`; allow an authorized reviewer to approve it into `Done` or reject it with feedback back into `In development`.
+- Reason: Agent evidence supports a decision but does not replace human acceptance of the requested product outcome.
+- Consequence: Agent success, review readiness, resumed development, and accepted completion are distinct states. The review surface must preserve the run, branch, evidence, preview, reviewer identity, decision, and rejection feedback.
+
+### Branch Preview Instead Of Production Deployment
+
+- Choice: Limit this workflow to an isolated branch and a non-production preview when supported.
+- Reason: Users need a way to test completed work without granting the first workflow authority to merge or deploy to production.
+- Consequence: Merge, release approval, production deployment, preview lifetime, and cleanup require later specifications.
+
+### Technology-Neutral Product Draft
+
+- Choice: Do not select the application framework or Symphony integration boundary until the product questions are resolved.
+- Reason: Framework selection should follow the agreed board, run, evidence, resume, deployment, and notification behavior.
+- Consequence: Technical design remains blocked, but engineering questions stay here rather than being presented as missing product requirements.
+
+## Risks
+
+- An AI readiness label may create false confidence. Keep findings visible and make start authorization explicit.
+- A finding may be classified incorrectly and create false readiness or unnecessary blocking. Preserve reviewability, keep blockers visible, and test classification outcomes against the approved product contract.
+- Duplicate dispatch or resume can create competing branches or repeated work. Require durable run identity and idempotent transitions.
+- An invalid or stale board action may attempt to bypass the lifecycle. Validate every transition against current feature state, authorization, and gate outcome.
+- Agent output may claim success without proof. Derive completion from the approved verification contract and typed evidence.
+- An agent or unauthorized participant may attempt to bypass review. Enforce the `Ready for review` boundary and authorized approval at the domain transition.
+- Questions may reach the wrong people or expose sensitive content. Restrict assignment actions and targets to authorized project participants and apply the recorded assignee-or-creator routing rule.
+- Screenshots, logs, comments, and preview URLs may expose personal data, source content, or secrets. Apply redaction, access control, retention, and deletion across every copy.
+- Preview deployments may create cost or security exposure. Require approved project configuration, isolation, lifecycle limits, and visible non-production status.
+- Local and remote workers may disconnect during a run. Preserve durable control-plane state and define reconciliation before implementation.
+- A single large workflow could become unimplementable. Keep the first executable slice constrained and defer provider breadth, production delivery, and general collaboration.
+
+## Open Questions
+
+- Which application framework and Symphony boundary best support durable runs, realtime board state, local and remote workers, and a web dashboard?
+- Which persistent state model and transition protocol make readiness, dispatch, blocking, resume, verification, and completion idempotent and auditable?
+- Which worker protocol and trust model support local and remote execution without exposing control-plane or provider credentials?
+- How are specification revisions and accepted blocking answers bound to a resumable agent context?
+- Which structured event and evidence contracts support tests, screenshots, comments, branch state, and preview deployments?
+- How are preview adapters, secrets, isolation, expiration, cleanup, and failure recovery implemented?
+- Which notification delivery, retry, deduplication, and content-minimization mechanisms satisfy the approved channels?
+- Which automated, integration, security, privacy, agent, browser, and live-preview commands form the verification gate?
