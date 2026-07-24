@@ -2,7 +2,7 @@
 
 ## Status
 
-Draft
+Approved
 
 ## Outcome
 
@@ -116,9 +116,14 @@ A BA, PO, PM, developer, or other project contributor can sign in with GitHub, f
 - Linking must not modify repository files, branches, settings, issues, or pull requests.
 - When GitHub access is lost, the project remains visible and its connection becomes disconnected.
 - Authentication credentials, repository credentials, and session secrets must never be displayed after acceptance or exposed in client payloads, logs, analytics, or project data.
-- Personal data introduced by this feature requires an approved purpose, lawful basis, access boundary, retention, deletion, rights behavior, processor boundary, transfer assessment, and required privacy review before implementation.
+- The operator of each hosted SDD Orchestrator deployment is the controller for the identity, session, workspace, selected repository metadata, project, and operational-security data that deployment receives.
+- Core personal data may be processed only as necessary to provide the user-requested hosted service; minimum operational-security data may be processed only for the documented service-security purpose and legitimate-interest assessment.
+- GitHub governs its own platform processing. Hosting, database, backup, and logging services used on behalf of a hosted deployment must be recorded and governed as processors where applicable.
+- Applicable access, correction, erasure, restriction, objection, and portability requests must be handled through a verified workflow without requiring a self-service screen in this slice.
 - This slice must not emit or retain product-analytics events, identifiers, or onboarding metrics.
 - Minimum operational and security logs are governed personal data, not analytics, and must follow the approved processing and retention contract.
+- Implementation and local verification may proceed under this approved data contract without selecting a production hosting provider.
+- A public hosted deployment must not be released until its controller identity and contact, processor list, hosting regions, transfer safeguards, privacy notice, incident path, retention enforcement, and required privacy or legal review are recorded.
 
 ## Acceptance Criteria
 
@@ -163,7 +168,9 @@ A BA, PO, PM, developer, or other project contributor can sign in with GitHub, f
 - Given onboarding completes, when repository state is inspected, then repository content and settings are unchanged and no AI agent has started.
 - Given any onboarding operation fails, when it ends, then no duplicate workspace, project, or repository connection exists.
 - Given any Slice 01 workflow is used, when stored and transmitted records are inspected, then no product-analytics event, identifier, or onboarding metric exists.
+- Given a verified rights request applies to Slice 01 data, when the operator handles it, then applicable access, correction, export, restriction, objection, or deletion reaches the governed active and retained copies under the approved lifecycle.
+- Given a public hosted deployment is missing any required deployment privacy record or review, when release readiness is evaluated, then that deployment remains blocked without blocking implementation or local verification.
 
 ## Open Questions
 
-- Which controller and processor roles, purposes, lawful bases, retention periods, rights workflows, subprocessors, transfers, and privacy reviews apply to this slice?
+- None.

@@ -61,6 +61,7 @@ Use UUIDs for internal identities and keep provider identifiers and display valu
 - `DeviceStorageReceipt`: an opaque, expiring readiness receipt supplied by the local-device boundary; it does not grant repository or control-plane access.
 - `ClientThemePreference`: an optional current-device light or dark choice held only in browser-local storage and never represented by a server record.
 - `DataProcessingRecord`: the approved specification-level purpose, lawful basis, fields, access, lifecycle, rights behavior, processors, transfers, and review for each processing activity.
+- `DeploymentPrivacyProfile`: release evidence identifying the hosted deployment's controller contact, processors, regions, transfer safeguards, privacy notice, incident path, and completed reviews; it is deployment configuration and governance evidence, not project data.
 
 Required boundaries:
 
@@ -95,7 +96,7 @@ Required boundaries:
 - Project naming interface: trim boundary whitespace, reject blank or control-character input, preserve the accepted display text, and derive `name_key` with Unicode `NFKC` normalization followed by Unicode default case folding. Default-name allocation retries the lowest available suffix after a unique violation; an edited-name conflict returns inline validation instead of silently changing the user's value.
 - Connection-status interface: revalidate access when the catalog or dashboard loads and when the user selects `Check again`. A missing installation, authorization failure, or failed refresh marks the connection disconnected without deleting the project; a transient provider outage shows an unavailable state without changing the last confirmed connection state.
 - Post-creation navigation interface: redirect to the new project dashboard only after the registration transaction commits; a failure keeps the resumable onboarding attempt and exposes no partial project.
-- Privacy-governance interface: block schema and backend approval until the proposed processing inventory, operator roles, retention, rights, processors, transfers, and required review are approved.
+- Privacy-governance interface: enforce the approved development data contract in schema, services, logs, tests, and cleanup. Separately block public hosted release until the deployment privacy profile is complete.
 
 ## Decisions and Tradeoffs
 
@@ -274,13 +275,20 @@ Semantic tokens:
 - Reason: Analytics is not required to deliver or verify onboarding and would introduce another processing purpose before the product has an approved anonymisation pipeline.
 - Consequence: Verification rejects analytics requests, events, identifiers, and metrics. Minimum operational and security logs remain governed personal data and require the privacy approval below.
 
-### Proposed Privacy Contract
+### Approved Development Privacy Contract
 
-- Choice pending approval: The operator of the hosted SDD Orchestrator service is controller for the identity, session, selected repository metadata, workspace, project, and operational-security records it receives. GitHub governs its own platform processing, while selected hosting, database, backup, and logging vendors act only under recorded roles and agreements.
-- Purpose and basis pending approval: Core records are necessary to provide the user-requested hosted service; minimum security records rely on a documented legitimate-interest assessment. No record is reused for analytics, advertising, model training, or unrelated product improvement.
-- Lifecycle pending approval: Authorization attempts become unusable after ten minutes and are deleted within 24 hours; abandoned onboarding attempts are deleted after 24 hours; expired or revoked sessions are deleted within 24 hours; and operational-security logs are deleted after 30 days. Keep encrypted provider credentials and confirmed project metadata only while the connected account or project requires them. An hourly supervised pruner uses a PostgreSQL advisory lock so cleanup remains idempotent across application instances; encrypted rolling backups expire within 35 days, and processor deletion follows the approved contract.
-- Access and rights pending approval: Restrict production access to the authenticated user and authorized operations roles, exclude coding agents, and provide verified access, correction, erasure, restriction, objection, and portability handling for applicable records.
-- Review pending approval: Record the actual controller identity, processor list, hosting regions, cross-border safeguards, retention enforcement, incident path, and whether a DPIA or other formal review is required before production processing.
+- Choice: Treat the operator of each hosted SDD Orchestrator deployment as controller for the identity, session, selected repository metadata, workspace, project, and operational-security records that deployment receives. GitHub governs its own platform processing; services acting on behalf of the deployment operator are processors where applicable.
+- Purpose and basis: Process core records only as necessary to provide the user-requested hosted service. Process minimum security records only for the documented service-security purpose and legitimate-interest assessment. Do not reuse either category for analytics, advertising, model training, or unrelated product improvement.
+- Lifecycle: Authorization attempts become unusable after ten minutes and are deleted within 24 hours; abandoned onboarding attempts are deleted after 24 hours; expired or revoked sessions are deleted within 24 hours; and operational-security logs are deleted after 30 days. Keep encrypted provider credentials and confirmed project metadata only while the connected account or project requires them.
+- Enforcement: An hourly supervised pruner uses a PostgreSQL advisory lock so cleanup remains idempotent across application instances. Encrypted rolling backups expire within 35 days, and processor deletion follows the deployment's approved contract.
+- Access and rights: Restrict data access to the authenticated user and authorized operations roles, exclude coding agents, and support verified access, correction, erasure, restriction, objection, and portability handling for applicable records. The first slice may use an authenticated operator workflow rather than adding self-service rights screens.
+- Development consequence: Schema, backend, and local verification may proceed under this contract. Ordinary automated tests use the deterministic GitHub adapter and synthetic data; any live GitHub smoke test uses an access-controlled environment and the operator's authorized test account.
+
+### Deployment Privacy Release Gate
+
+- Choice: Separate deployment-specific legal and vendor evidence from the approved implementation contract.
+- Reason: Framework, schema, lifecycle, access, and verification decisions are stable before a production host is selected, while controller contact details, vendors, regions, and transfer mechanisms vary by deployment.
+- Consequence: A public hosted deployment cannot release until it records the actual controller identity and contact, processor list and agreements, hosting and backup regions, cross-border safeguards, privacy notice, incident path, retention enforcement, and the outcome of any required DPIA or other privacy or legal review. Missing deployment evidence blocks that release, not implementation or local verification.
 
 ### Portable Deployment
 
@@ -332,4 +340,4 @@ Semantic tokens:
 
 ## Open Questions
 
-- Is the proposed Slice 01 privacy contract approved, including the actual controller identity, service-delivery and security purposes and bases, retention periods, rights handling, processor roles, hosting regions, transfer safeguards, and required privacy or legal reviews?
+- None.

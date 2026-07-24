@@ -2,7 +2,7 @@
 
 ## Status
 
-Blocked
+Not Started
 
 ## Active Slice
 
@@ -43,6 +43,8 @@ Deferred after this slice:
 Release boundary:
 
 - This slice may be implemented and verified independently.
+- Implementation and local verification may proceed under the approved development privacy contract without selecting a production hosting provider.
+- A public hosted deployment remains release-blocked until its deployment privacy profile records the controller contact, processors, regions, transfer safeguards, privacy notice, incident path, retention enforcement, and required reviews.
 - The first usable release remains blocked until `specs/02-local-project-onboarding/` and every shared dependency invoked by both onboarding paths also pass their release gates.
 - Coordinated browser proof must show that `Login with GitHub` and `Work without GitHub` are both available and complete from the same entry surface.
 
@@ -82,7 +84,7 @@ Release boundary:
 
 - [ ] Define and enforce the slice GDPR data contract.
   - Purpose: Make lawful processing, minimization, retention, rights, processors, transfers, no-analytics enforcement, and security part of implementation approval.
-  - Proof: The approved processing inventory and automated lifecycle checks cover every field, authorization and onboarding attempt, session, credential, log, cache, backup, export, and processor; network and data-store checks prove that no product analytics is emitted or retained; required privacy and legal reviews are recorded.
+  - Proof: The approved processing inventory and automated lifecycle checks cover every field, authorization and onboarding attempt, session, credential, log, cache, backup, export, and configured processor; network and data-store checks prove that no product analytics is emitted or retained; verified rights handling is documented and tested; release checks reject an incomplete deployment privacy profile.
 
 - [ ] Complete security and observability review.
   - Purpose: Diagnose failure without leaking secrets or leaving partial state.
@@ -99,13 +101,13 @@ Release boundary:
 - [ ] Light and dark theme, operating-system fallback, device-local preference, no-sync, keyboard-only, focus, contrast, non-color status, responsive text-fit, and layout-stability checks pass.
 - [ ] PKCE, return validation, credential encryption and refresh, session rotation and expiry, provider revalidation, no-webhook behavior, and secret-isolation checks pass.
 - [ ] Hosted storage transaction, device readiness-receipt contract, idempotency, rollback, abort, concurrency, and no-partial-project checks pass.
-- [ ] GDPR data contracts, retention rules, rights paths, processor and transfer boundaries, no-analytics proof, and required privacy or legal review are complete.
+- [ ] The approved development data contract, retention cleanup, verified rights workflow, no-analytics proof, and deployment-privacy release-blocking checks pass.
 - [ ] Browser network and failure-log review proves that credentials, personal display values, external optional assets, and product analytics are absent.
 - [ ] New decisions and invalidated proof are written back.
 
 ## Blocked Decisions
 
-- Approve the proposed Slice 01 privacy contract and record the actual controller identity, processing purposes and lawful bases, retention, rights handling, processor roles, hosting regions, transfer safeguards, and required privacy or legal reviews.
+- None.
 
 ## Progress Log
 
@@ -119,6 +121,13 @@ Release boundary:
 ### 2026-07-23 - Technical design checkpoint
 
 - Completed: Selected the Phoenix application foundation, GitHub App authorization and installation contract, protected session and credential boundaries, stable repository identity, storage adapter, Unicode name comparison, provider-neutral deployment, and canonical verification toolchain.
-- Remaining: Approve the proposed Slice 01 privacy contract before requirements can become `Approved` and implementation can start.
+- Remaining at this checkpoint: Approve the Slice 01 privacy contract; resolved by the 2026-07-24 checkpoint below.
 - Failed checks: None; implementation has not started.
-- Spec updates: Removed the resolved engineering questions and retained one accountable privacy and legal blocker.
+- Spec updates: Removed the resolved engineering questions and identified the then-remaining privacy and legal blocker.
+
+### 2026-07-24 - Privacy contract approval
+
+- Completed: Approved the development-time controller, purposes, lawful bases, data minimization, retention, access, rights, processor role, no-analytics, and cleanup contract.
+- Remaining: No active-slice decision blocks implementation. Each public hosted deployment must still complete its deployment-specific privacy release gate.
+- Failed checks: None; implementation has not started.
+- Spec updates: Separated stable implementation requirements from controller contact, vendor, region, transfer, notice, incident, and final-review evidence that depends on the production deployment.

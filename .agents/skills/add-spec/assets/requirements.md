@@ -41,4 +41,4 @@ Draft | Approved | Implementing | Verified
 
 ## Open Questions
 
-- <Decision that must be resolved before implementation>
+- <Unresolved product decision and the earliest readiness stage it blocks, or None>

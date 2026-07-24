@@ -47,7 +47,7 @@ GDPR compliance is a project-wide requirement for every database schema, backend
 - Analytics must always be aggregate and genuinely anonymous. Do not retain user, device, workspace, project, repository, network, content, or stable pseudonymous identifiers in analytics.
 - Treat pseudonymised, hashed, encrypted, or otherwise linkable data as personal data, not anonymous analytics.
 - Include derived records, soft-deleted data, logs, caches, indexes, backups, exports, local workers, coding agents, model providers, and other subprocessors in privacy and retention analysis.
-- Automated tests and technical controls provide compliance evidence but do not establish legal compliance by themselves. Keep affected work blocked until required privacy or legal decisions and reviews are recorded.
+- Automated tests and technical controls provide compliance evidence but do not establish legal compliance by themselves. Keep a stage blocked only when its required privacy or legal decisions are unresolved. Put deployment-specific controller details, vendors, regions, transfer safeguards, notices, and final reviews in an explicit release gate when they are not needed to implement or locally verify the approved contract.
 
 Use the official [GDPR text](https://eur-lex.europa.eu/eli/reg/2016/679/oj) and [European Data Protection Board anonymisation guidance](https://www.edpb.europa.eu/topics/ai-and-technology/anonymisation-pseudonymisation_en) as primary references.
 
@@ -87,6 +87,14 @@ Spec-only work must stop after the specification and directly requested project 
 - When product requirements are complete, state that clearly and explicitly transition to technical design.
 - During technical design, make engineering-owned decisions from the approved requirements, project constraints, official documentation, and existing repository patterns. Ask the user only when a choice changes observable behavior or requires explicit product, security, privacy, cost, or operational risk acceptance.
 - Do not begin implementation until the technical design and active slice are approved under the applicable SDD workflow.
+
+## Readiness And Blocker Scope
+
+- Report product-requirement readiness, technical-design readiness, implementation state, verification state, and release readiness separately.
+- Every unresolved decision must name the earliest stage it blocks. A later-stage unknown must not make an earlier ready stage appear blocked.
+- Requirements may be `Approved` while technical design, implementation, verification, or release work remains. `Approved` means the product agreement is stable enough to proceed, not that the feature is implemented or releasable.
+- Mark `tasks.md` as `Blocked` only when an unresolved decision prevents the active slice from starting, continuing, or completing its required verification.
+- Keep deployment-dependent evidence in an explicit release gate. It must block deployment and release claims without blocking implementation or local verification when the stable implementation contract is already approved.
 
 ## Implementation Workflow
 
@@ -144,6 +152,16 @@ For instruction and skill changes, run the checks that currently apply:
 - Skills: validate every changed canonical skill under `.agents/skills/` with the validator provided by the active skill-authoring environment.
 - Specifications: `python3 .agents/scripts/validate_spec.py specs/<feature>`
 
-When the first executable slice introduces a build, test, type-check, lint, or runtime command, record the canonical commands here and in the relevant verification gate before marking that slice `Approved`.
+Slice 01 is the first approved executable slice. Its application-bootstrap task must establish these canonical commands:
 
-Do not mark a slice `Verified` while a required check is failing or unavailable without an explicit accepted exception.
+- Toolchain and database: `mise install` and `docker compose up -d postgres`
+- Initial setup: `mix setup`
+- Local server: `mix phx.server`
+- Standard developer gate: `mix check`
+- Explicit code-quality gate: `mix format --check-formatted`, `mix compile --warnings-as-errors`, `mix credo --strict`, `mix dialyzer`, `mix deps.audit`, `mix sobelow --config`, and `mix test`
+- Browser setup and proof: `npm --prefix assets ci` and `npm --prefix assets run test:e2e`
+- Production proof: `MIX_ENV=prod mix assets.deploy` and `MIX_ENV=prod mix release`
+
+The bootstrap implementation must add `mix check` as the standard formatting, compilation, lint, and test alias. Until the application skeleton exists, missing application commands are work owned by that bootstrap task, not verification exceptions.
+
+Do not mark a slice `Verified` while a required established check is failing or unavailable without an explicit accepted exception.
