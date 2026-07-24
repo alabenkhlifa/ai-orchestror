@@ -58,6 +58,7 @@ The SDD skills are mandatory. Select the matching skill from the user's intent e
 - Always use `add-spec` when defining, scoping, planning, or creating a new specification, feature, or implementation slice.
 - Always use `update-spec` when changing existing requirements, scope, business rules, design decisions, implementation boundaries, acceptance criteria, or verification expectations.
 - Always use `implement-spec` when implementing, continuing, or verifying one approved active slice.
+- Always use `review-spec` when reviewing, auditing, or second-checking the implementation of a slice another agent delivered, including checking for missed behavior, scope drift, privacy or security gaps, or needed refactoring. It re-runs the task proofs and verification gate, reports findings, and routes fixes to `implement-spec` or agreement changes to `update-spec` without editing the code or the specification itself.
 
 Invoke or activate the matching project skill through the current tool's skill system at the start of every workflow. Do not merely read its `SKILL.md` as reference material and imitate the steps in an ad hoc process.
 

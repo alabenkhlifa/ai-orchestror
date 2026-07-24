@@ -59,13 +59,14 @@ Hermes Agent is a product and user-experience reference, not an implementation s
 
 ## SDD Workflow
 
-The initial workflow is built around three operations:
+The initial workflow is built around four operations:
 
 - `add-spec`: create a specification without implementing it.
 - `update-spec`: change the agreement before changing implementation.
 - `implement-spec`: implement and verify one approved slice.
+- `review-spec`: independently review a slice's implementation against its specification, re-running its proofs and reporting findings without changing the code or the agreement.
 
-The project expects to use `add-spec` frequently as Symphony capabilities are introduced as bounded SDD Orchestrator features. It expects to use `update-spec` whenever product discovery, implementation evidence, or an intentional departure from Symphony changes the agreement. Neither workflow continues into implementation; `implement-spec` handles an approved slice separately.
+The project expects to use `add-spec` frequently as Symphony capabilities are introduced as bounded SDD Orchestrator features. It expects to use `update-spec` whenever product discovery, implementation evidence, or an intentional departure from Symphony changes the agreement. Neither workflow continues into implementation; `implement-spec` handles an approved slice separately. Because Codex and Claude Code both work in this repository, `review-spec` lets one agent independently review a slice the other implemented, keeping the reviewer separate from the implementer.
 
 The project will adapt these workflows as its real product and operational requirements become clearer. Choosing Symphony as a foundation does not bypass the specification and approval process.
 
@@ -81,7 +82,7 @@ The canonical project skills live under `.agents/skills/` and follow the Agent S
 
 - Git repository initialized on `main` with the initial project bootstrap committed locally.
 - Shared Codex and Claude Code instructions added.
-- `add-spec`, `update-spec`, and `implement-spec` installed as shared Codex and Claude skills; the specification workflows now include decision ownership, small related question batches, a recommendation for every question, one write-back per answered batch, concise progress logs, and stage-specific readiness.
+- `add-spec`, `update-spec`, `implement-spec`, and `review-spec` installed as shared Codex and Claude skills; the specification workflows now include decision ownership, small related question batches, a recommendation for every question, one write-back per answered batch, concise progress logs, and stage-specific readiness. `review-spec` provides independent cross-agent review of an implemented slice, re-running its proofs and routing findings without changing the code or the agreement.
 - OpenAI Symphony selected as the orchestration foundation; no reference code has been imported. Slice 01 selects Elixir/Phoenix, LiveView, and PostgreSQL for the product control plane.
 - Project onboarding is organized as six ordered specifications under `specs/`: GitHub onboarding, local onboarding, hosted passwordless access, GitHub identity linking, project storage lifecycle, and project portability. Slice 01 is approved and ready for implementation; its public hosted deployment remains privacy-gated. The other onboarding specifications remain draft and blocked by their recorded outstanding decisions.
 - No dashboard, service, worker runtime, provider integration, or application toolchain implemented yet.
