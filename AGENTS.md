@@ -76,13 +76,22 @@ Spec-only work must stop after the specification and directly requested project 
 - Use representative acceptance criteria. Do not duplicate a full technical test matrix across requirements, design, and tasks.
 - Stop refining a specification when the product agreement is sufficient for a useful `Draft` and the remaining decisions are clearly owned by technical design.
 
+## Specification Question Batches
+
+- Before asking, search the current requirements, design, tasks, and recorded project decisions. Do not ask for a decision that is already recorded.
+- Group related, independent user-owned questions that share one workflow context and readiness stage into a small batch, usually two to five questions.
+- Ask one question by itself only when its answer changes the next questions, it is a foundational product fork, or a previous answer needs clarification.
+- Always provide one recommended answer and a brief reason for every question. When no product option can be responsibly preferred, recommend the next action, such as deferring the decision, gathering evidence, or asking the accountable owner.
+- Format each batch so the user can answer every question individually or accept all recommendations together.
+- Do not mix product-discovery and technical-design questions in one batch.
+- After the user answers, apply the complete batch through one `update-spec` write-back and one validation pass before asking another batch or ending the session.
+
 ## Product-First SDD Sequence
 
 - Complete product requirements before asking technical-design or implementation questions or asking the user to make implementation decisions.
 - During product discovery, ask only about observable behavior, workflow, scope, business rules, ownership, data handling, risk acceptance, privacy expectations, and acceptance outcomes.
 - Do not ask about frameworks, libraries, architecture, protocols, data models, storage mechanisms, algorithms, deployment, test commands, or other implementation details while product requirements remain unresolved.
 - Record unresolved engineering questions in `design.md` or technical task blockers without presenting them to the user as missing product requirements.
-- Before asking a product question, search the current requirements, design, tasks, and recorded project decisions. Do not ask for a decision that is already recorded.
 - Do not describe a feature as unspecified merely because its technical design is pending. Report product-requirement completeness, technical-design readiness, and implementation-slice status separately.
 - When product requirements are complete, state that clearly and explicitly transition to technical design.
 - During technical design, make engineering-owned decisions from the approved requirements, project constraints, official documentation, and existing repository patterns. Ask the user only when a choice changes observable behavior or requires explicit product, security, privacy, cost, or operational risk acceptance.
@@ -122,7 +131,7 @@ Do not continue by silently choosing a new product or architecture decision.
 ## Write-Back Rules
 
 - During discussion of an existing specification, any answer or agreement that needs to persist must be written through `update-spec`; do not edit the specification through an ad hoc workflow.
-- Immediately after the user answers a question about an existing specification, activate or continue `update-spec` and write the accepted answer into every affected specification file before asking the next question or ending the session.
+- Immediately after the user answers a question or related question batch about an existing specification, activate or continue `update-spec` and write all accepted answers into every affected specification file before asking the next batch or ending the session.
 - Accepted decisions, resolved questions, newly exposed blockers, status changes, and progress must not live only in the conversation.
 - A new conversation should recover specification state from the repository and need only the user's next intent. Do not compensate for missing write-back with a handoff mega-prompt.
 - Update `requirements.md` when expected behavior, scope, or a business rule changes.
