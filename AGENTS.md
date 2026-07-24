@@ -105,15 +105,24 @@ Spec-only work must stop after the specification and directly requested project 
 - Mark `tasks.md` as `Blocked` only when an unresolved decision prevents the active slice from starting, continuing, or completing its required verification.
 - Keep deployment-dependent evidence in an explicit release gate. It must block deployment and release claims without blocking implementation or local verification when the stable implementation contract is already approved.
 
+## Delivery Coverage
+
+- Inventory every UI, API, domain, persistence, integration, security or privacy, and operational surface named by the active-slice requirements and design.
+- Map every surface to one primary implementation task through that task's `Owned surfaces` field. Report and resolve any unmapped or ambiguously owned surface before implementation.
+- Prefer vertical workflow tasks that own user-visible UI and its supporting logic together when one scenario can implement and prove them coherently.
+- Treat browser checks and other tests as proof of an owned surface, not as ownership of its implementation. A page named only in proof remains unmapped.
+- Use a final end-to-end task to integrate and verify surfaces already owned by earlier tasks. It must not silently become the sole owner of otherwise unassigned pages, APIs, or supporting behavior.
+
 ## Implementation Workflow
 
 1. Confirm that requirements and design contain no blocking open questions.
-2. Work only from the active slice in `tasks.md`.
-3. Keep changes inside its implementation boundary.
-4. Implement one task at a time.
-5. Run the proof attached to each task before marking it complete.
-6. Run the full verification gate before calling the slice complete.
-7. Write progress and new decisions back to the spec files as the state changes.
+2. Confirm that every required delivery surface has one unambiguous owning task.
+3. Work only from the active slice in `tasks.md`.
+4. Keep changes inside its implementation boundary.
+5. Implement one task at a time.
+6. Run the proof attached to each task before marking it complete.
+7. Run the full verification gate before calling the slice complete.
+8. Write progress and new decisions back to the spec files as the state changes.
 
 ## Stop Conditions
 
@@ -124,6 +133,7 @@ Stop implementation and report the issue when:
 - The code, acceptance criteria, and existing system disagree.
 - A required check fails and cannot be fixed inside the approved slice.
 - Continuing would require changing an acceptance criterion to fit the code.
+- A required delivery surface has no clear owning task.
 - Another task, Codex session, or Claude Code session owns the same files or responsibility.
 
 Do not continue by silently choosing a new product or architecture decision.
@@ -151,7 +161,7 @@ Keep decisions in project files, not only in the conversation.
 
 ## Current Project Checks
 
-The repository does not have an application toolchain yet.
+The repository has the Slice 01 Phoenix toolchain. Run the checks applicable to the change.
 
 For instruction and skill changes, run the checks that currently apply:
 
