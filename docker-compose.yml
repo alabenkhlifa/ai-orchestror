@@ -1,0 +1,21 @@
+services:
+  postgres:
+    image: postgres:17-alpine
+    container_name: sdd_orchestrator_postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    # Host port 5433 (localhost only) avoids clashing with any other local
+    # Postgres on the default 5432. dev/test config point at 5433 to match.
+    ports:
+      - "127.0.0.1:5433:5432"
+    volumes:
+      - sdd_orchestrator_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  sdd_orchestrator_pgdata:

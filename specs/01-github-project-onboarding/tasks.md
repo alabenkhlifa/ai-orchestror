@@ -2,7 +2,7 @@
 
 ## Status
 
-Not Started
+In Progress
 
 ## Active Slice
 
@@ -50,9 +50,10 @@ Release boundary:
 
 ## Tasks
 
-- [ ] Establish the approved application skeleton and canonical development checks.
+- [x] Establish the approved application skeleton and canonical development checks.
   - Purpose: Provide only the selected Phoenix, LiveView, PostgreSQL, local-asset, release, configuration, and test foundations required by this slice.
   - Proof: A clean checkout pins the approved runtime and dependencies; `mise install`, `docker compose up -d postgres`, `mix setup`, `mix check`, `mix dialyzer`, `mix deps.audit`, `mix sobelow --config`, the Playwright setup, production asset build, and production release succeed without committed secrets.
+  - Status: Complete. All listed proofs pass (see 2026-07-24 bootstrap progress entry). No committed secrets.
 
 - [ ] Implement GitHub identity and protected session behavior.
   - Purpose: Let the user sign in, restore access, and sign out without exposing credentials.
@@ -131,3 +132,13 @@ Release boundary:
 - Remaining: No active-slice decision blocks implementation. Each public hosted deployment must still complete its deployment-specific privacy release gate.
 - Failed checks: None; implementation has not started.
 - Spec updates: Separated stable implementation requirements from controller contact, vendor, region, transfer, notice, incident, and final-review evidence that depends on the production deployment.
+
+### 2026-07-24 - Application skeleton bootstrap complete
+
+- Completed: Bootstrapped the single Phoenix application at the repository root and established every canonical development check. Task 1 is done.
+- Toolchain (pinned in `mise.toml`): Erlang/OTP 29.0.3, Elixir 1.20.2-otp-29, Node 22.13.1. Phoenix 1.8.9, Phoenix LiveView 1.2.7, Ecto SQL 3.14.0, Bandit 1.12.0 (locked in `mix.lock`).
+- Passing proofs: `mise install`; `docker compose up -d postgres` (Postgres 17, healthy); `mix setup`; `mix check` (format-check, compile `--warnings-as-errors`, `credo --strict`, `mix test` = 5 passed) as the standard alias; `mix dialyzer` (0 errors); `mix deps.audit` (no vulnerabilities); `mix sobelow --config`; `npm --prefix assets ci`; `npm --prefix assets run test:e2e` (Playwright/Chromium smoke = 1 passed); `MIX_ENV=prod mix assets.deploy`; `MIX_ENV=prod mix release`.
+- Failed checks: None. Secrets remain runtime-only; none committed.
+- Deferred: Content-Security-Policy is intentionally not yet enforced. Sobelow's `Config.CSP` is the only ignored check (`.sobelow-conf`, documented). A correct strict CSP needs a nonce/hash for the device-local pre-paint inline theme script, so it is owned by the theme interface and the "Complete security and observability review" task, not the skeleton.
+- Local engineering decisions (implementation mechanisms, non-behavioral): the dev/test Postgres publishes host port `5433` (localhost-only) to avoid clashing with an existing local Postgres on 5432; `mix assets.deploy` compiles first so Phoenix 1.8 colocated CSS/JS is generated before Tailwind/esbuild; `mix check` runs under `MIX_ENV=test`; `Credo.Check.Design.AliasUsage` is disabled for Phoenix-generated code.
+- Note: Only the skeleton task is complete. The remaining slice tasks are not started; the slice is not `Verified`.

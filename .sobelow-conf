@@ -1,0 +1,22 @@
+# Sobelow security scan configuration. `mix sobelow --config` reads this file.
+#
+# exit: "low"   -> the scan exits non-zero on any Low+ confidence finding, so the
+#                  security gate fails the build on regressions.
+# ignore: ["Config.CSP"] -> the Content-Security-Policy is intentionally deferred
+#                  to the theme/security-review tasks of specs/01: the onboarding
+#                  theme relies on an inline pre-paint <script>, so a correct strict
+#                  CSP needs a nonce or hash that those tasks own. This is the only
+#                  ignored check.
+[
+  exit: "low",
+  format: "txt",
+  ignore: ["Config.CSP"],
+  ignore_files: [],
+  out: nil,
+  private: false,
+  router: nil,
+  skip: false,
+  threshold: :low,
+  verbose: false,
+  version: false
+]
