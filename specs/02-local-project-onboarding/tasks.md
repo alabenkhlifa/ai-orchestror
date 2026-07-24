@@ -6,16 +6,17 @@ Blocked
 
 ## Active Slice
 
-Deliver accountless on-device onboarding for one local Git repository through one paired worker, ending on the new project's dashboard with its repository, storage mode, and connection status visible without source upload.
+Deliver accountless on-device onboarding for one local Git repository through one paired macOS worker, ending on the new project's dashboard with its repository, storage mode, and connection status visible without source upload.
 
 ## Implementation Boundary
 
 Included:
 
 - Accountless device workspace required by the local path.
-- Worker discovery, installation guidance, secure pairing, and status.
-- Local Git repository selection and validation.
-- Approved metadata exchange and atomic project registration.
+- macOS worker discovery, graphical installation guidance, secure pairing, replacement pairing, and status.
+- Native folder selection, local Git repository validation, and moved-repository recovery.
+- First-connection privacy disclosure, approved minimum metadata exchange, and atomic project registration.
+- Accountless data-loss warning and export-only project-history recovery boundary.
 - Direct handoff to the new project's dashboard with repository, storage, and connection state.
 - Shared naming and repository-uniqueness rules.
 - Connection-state and failure UX.
@@ -27,11 +28,13 @@ Excluded:
 - Remote or cloud workers and agent execution.
 - Source upload, browsing, editing, or execution from the control plane.
 - Shared-operating-system-user isolation.
+- Windows and Linux worker delivery and verification.
 
 Deferred after this slice:
 
 - Hosted local-repository projects through `specs/03-hosted-passwordless-access/` and `specs/05-project-storage-lifecycle/`.
-- Combined local and hosted catalog deduplication beyond non-mutating composition.
+- Combined catalog implementation that preserves separate project identities and shows one authoritative entry after explicit migration or resynchronization.
+- Windows worker support, followed by Linux worker support.
 
 Release boundary:
 
@@ -43,23 +46,23 @@ Release boundary:
 
 - [ ] Establish the accountless device-workspace boundary.
   - Purpose: Persist local project ownership without requiring an account.
-  - Proof: Tests show stable access under the same OS boundary and isolation from hosted authorization.
+  - Proof: Tests show stable access under the same OS boundary, isolation from hosted authorization, and a clear loss outcome that never presents repository reconnection as restoration of missing project history.
 
 - [ ] Implement worker discovery and installation guidance.
   - Purpose: Give non-technical users an actionable path when no worker is available.
-  - Proof: Browser scenarios cover detected, missing, incompatible, and unavailable worker states.
+  - Proof: macOS browser scenarios cover detected, missing, incompatible, and unavailable worker states plus graphical installation without terminal commands.
 
 - [ ] Implement secure workspace-bound pairing.
   - Purpose: Authorize one worker for one workspace without transferable credentials.
-  - Proof: Security tests cover attempt expiry, confirmation, replay rejection, revocation, rotation, and cross-workspace denial.
+  - Proof: Security tests cover attempt expiry, confirmation, replay rejection, revocation, rotation, replacement-worker pairing, and cross-workspace denial.
 
 - [ ] Implement local repository selection and validation.
   - Purpose: Validate one user-selected Git repository entirely on the worker.
-  - Proof: Integration tests cover valid, invalid, inaccessible, moved, and unavailable repositories without source upload.
+  - Proof: Integration and UI tests cover native folder selection, valid, invalid, inaccessible, moved, non-matching, and unavailable repositories plus canonical-identity reconnection without source upload.
 
 - [ ] Define and enforce minimum outbound metadata.
-  - Purpose: Establish repository identity and status without leaking paths or source content unnecessarily.
-  - Proof: Contract and privacy tests reject fields outside the approved schema and lifecycle.
+  - Purpose: Establish connection and compatibility state without sending local paths, remote URLs, filenames, Git history, or source code during onboarding.
+  - Proof: Contract and privacy tests reject prohibited fields and any outbound onboarding exchange before first-use confirmation, while allowing later unchanged connections without repeated confirmation.
 
 - [ ] Create the project and local repository connection atomically.
   - Purpose: Apply shared naming and uniqueness rules without partial records.
@@ -67,14 +70,15 @@ Release boundary:
 
 - [ ] Build local onboarding and connection-state UX.
   - Purpose: Complete the path without requiring terminal interaction beyond any approved installer step.
-  - Proof: Desktop and mobile scenarios cover pairing, selection, confirmation, success, direct new-project dashboard routing, visible repository, storage mode, and connection status, and actionable recovery.
+  - Proof: Desktop and mobile scenarios cover graphical installation, pairing, native selection, first-connection disclosure and confirmation, accessible later disclosure, data-loss warning, success, direct new-project dashboard routing, visible repository, storage mode, connection status, replacement-worker pairing, `Locate repository` recovery, and project-portability handoff when an export exists.
 
 ## Verification Gate
 
 - [ ] Active-slice acceptance criteria pass.
 - [ ] Pairing security and cross-workspace isolation tests pass.
-- [ ] Worker and repository integration tests pass on supported platforms.
-- [ ] Source-upload and metadata-minimization checks pass.
+- [ ] Worker and repository integration tests pass on the approved macOS versions.
+- [ ] Source-upload, prohibited-onboarding-data, first-confirmation, and metadata-minimization checks pass.
+- [ ] Accountless data-loss scenarios distinguish export import, repository reconnection, and new project history.
 - [ ] Project naming, uniqueness, atomicity, and connection-state tests pass.
 - [ ] Successful creation opens the new project's dashboard with the required repository, storage, and connection state.
 - [ ] Required browser scenarios pass.
@@ -84,13 +88,13 @@ Release boundary:
 
 ## Blocked Decisions
 
-- Select worker packaging, supported platforms, update and signing model.
-- Select pairing protocol, credential lifecycle, transport, and revocation behavior.
-- Define canonical local repository identity and minimum outbound metadata.
-- Define accountless device-workspace persistence and recovery.
-- Select the application-to-worker test strategy and canonical commands.
-- Approve the relevant GDPR data contract, retention, processor, transfer, rights, and review decisions.
-- Approve integration boundaries with project storage selection and hosted passwordless access.
+- Technical design: Define the exact minimum connection and compatibility fields and internal identifiers within the approved outbound-data boundary.
+- Technical design: Select supported macOS versions, packaging, update, and signing mechanisms.
+- Technical design: Select the pairing protocol, credential lifecycle, outbound transport, replacement pairing, and revocation behavior.
+- Technical design: Define canonical local repository identity across clones, worktrees, moved paths, changed remotes, and replacement workers.
+- Technical design: Approve integration boundaries with project storage selection and hosted passwordless access.
+- Required verification: Select the application-to-worker test strategy and canonical commands.
+- Active-slice implementation: Approve the GDPR data contract, retention, processor, transfer, rights, and review decisions for outbound metadata and pairing credentials.
 
 ## Progress Log
 
@@ -100,3 +104,10 @@ Release boundary:
 - Remaining: Resolve worker architecture, repository identity, metadata, privacy, integration, and verification decisions.
 - Failed checks: None; implementation has not started.
 - Spec updates: Created a focused local onboarding specification without changing accepted product behavior.
+
+### 2026-07-24 - Local setup and recovery checkpoint
+
+- Completed: Approved the local-onboarding product requirements, including macOS scope, native folder selection, explicit connection recovery, first-connection privacy disclosure, export-only project-history recovery, and stable-identity combined-catalog behavior.
+- Remaining: Resolve the classified metadata-contract, technical, privacy, and verification blockers before implementation can start.
+- Failed checks: None; implementation has not started.
+- Spec updates: Product requirements moved from `Draft` to `Approved`; tasks remain `Blocked` at technical design and implementation readiness.

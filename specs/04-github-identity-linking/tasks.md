@@ -6,7 +6,7 @@ Blocked
 
 ## Active Slice
 
-Deliver conservative automatic matching and a conflict-free atomic merge into the existing passwordless workspace, while safely aborting every ineligible, ambiguous, or conflicting case without mutation.
+Deliver conservative automatic candidate detection, fresh proof of both sign-in methods, explicit confirmation, and a conflict-free atomic merge into the existing passwordless workspace, while safely aborting every ineligible, ambiguous, unproven, unconfirmed, or conflicting case without mutation.
 
 ## Implementation Boundary
 
@@ -15,6 +15,7 @@ Included:
 - Verified-primary retrieval and secondary-address non-retention.
 - ASCII eligibility and approved automatic-match normalization.
 - Zero-or-one candidate resolution and collision safety.
+- Fresh proof of both sign-in methods and explicit initial-link confirmation.
 - Complete non-mutating merge preflight.
 - Conflict-free atomic identity and hosted-project consolidation.
 - Worker-pairing revocation after commit.
@@ -31,7 +32,7 @@ Deferred after this slice:
 
 - Interactive name and repository conflict recovery.
 - User-initiated unlink and explicit re-link flows.
-- Incorrect-merge challenge and support recovery.
+- Confirmed-merge challenge and support recovery.
 
 ## Tasks
 
@@ -48,12 +49,16 @@ Deferred after this slice:
   - Proof: Unit and property tests cover whitespace, domain case, local-part case, dot and tag rules, custom domains, Unicode, IDNA, ambiguity, and registry versions.
 
 - [ ] Implement identity candidate resolution and complete merge preflight.
-  - Purpose: Detect one valid match and every project-name or repository conflict before mutation.
-  - Proof: Tests cover zero, one, multiple, retry, concurrency, name conflict, repository conflict, and unchanged state after abort.
+  - Purpose: Detect one valid candidate without account disclosure and identify every project-name or repository conflict before mutation.
+  - Proof: Tests cover zero, one, multiple, retry, concurrency, name conflict, repository conflict, candidate secrecy, and unchanged state after abort.
+
+- [ ] Implement fresh two-method proof and explicit initial-link confirmation.
+  - Purpose: Prevent an email match from authorizing an irreversible account merge.
+  - Proof: Security and browser tests cover successful proof, invalid, expired, mismatched, replayed, cancelled, and unconfirmed attempts; only a freshly proven and explicitly confirmed attempt may reach commit.
 
 - [ ] Implement atomic conflict-free identity and project consolidation.
   - Purpose: Preserve the passwordless identity and every hosted project exactly once.
-  - Proof: Persistence and fault-injection tests prove idempotency, rollback, stable identities, complete data movement, and no partial workspace state.
+  - Proof: Persistence and fault-injection tests prove confirmation binding, idempotency, rollback, stable identities, complete data movement, GitHub sign-in to the surviving workspace, and no partial workspace state.
 
 - [ ] Revoke absorbed-workspace worker credentials after commit.
   - Purpose: Prevent silent transfer of machine trust.
@@ -72,26 +77,29 @@ Deferred after this slice:
 - [ ] Active-slice acceptance criteria pass.
 - [ ] Provider retrieval and secondary-address non-retention tests pass.
 - [ ] Normalization registry, collision, ambiguity, Unicode, and IDNA tests pass.
+- [ ] Candidate secrecy, fresh two-method proof, explicit confirmation, cancellation, expiry, mismatch, and replay tests pass.
 - [ ] Preflight, idempotency, concurrency, atomicity, and rollback tests pass.
 - [ ] Project preservation and worker-pairing tests pass.
+- [ ] Linked-GitHub access restores only the surviving workspace and cannot authorize verified-email change, unlinking, or re-linking alone.
 - [ ] Merge-record data contract, access, retention, deletion, and privacy review pass.
 - [ ] Account-neutral UX, notification, audit, and secret-exposure reviews pass.
 - [ ] Build, formatting, lint, static checks, integration tests, and browser scenarios pass.
 
 ## Blocked Decisions
 
-- Approve exact launch provider rules and their governance.
-- Approve the merge record's purpose, lawful basis, access, shortest retention, deletion, rights behavior, and required review.
-- Define incorrect-merge recovery and the explicit re-link rule when GitHub has no verified primary email.
-- Approve the unlink-policy data contract and lifecycle before its later slice.
-- Select GitHub permissions, identity transaction, locking, idempotency, credential-revocation, notification, and audit mechanisms.
-- Define canonical automated, property, integration, concurrency, security, and browser verification commands.
+- Technical design: Approve exact launch provider rules and their governance.
+- Active-slice implementation: Approve the merge record's purpose, lawful basis, access, shortest retention, deletion, rights behavior, and required review.
+- Product requirements: Define recovery when a user challenges a merge they explicitly confirmed.
+- Product requirements: Define the explicit re-link rule when GitHub has no verified primary email.
+- Active-slice implementation: Approve the unlink-policy data contract and lifecycle before its later slice.
+- Technical design: Select GitHub permissions, candidate expiry, proof binding, identity transaction, locking, idempotency, credential-revocation, notification, and audit mechanisms.
+- Required verification: Define canonical automated, property, integration, concurrency, security, and browser commands.
 
 ## Progress Log
 
 ### 2026-07-23 - Extracted from project onboarding
 
-- Completed: Consolidated the accepted automatic matching, provider normalization, atomic merge, conflict recovery, worker re-pairing, minimal record, unlink, and re-link decisions into one identity specification.
-- Remaining: Resolve launch provider rules, privacy approvals, recovery, no-primary re-link behavior, transaction architecture, and verification.
+- Completed: Kept automatic matching as non-mutating candidate detection and required fresh proof of both sign-in methods, complete preflight, and explicit confirmation before the initial atomic merge.
+- Remaining: Resolve confirmed-merge recovery, no-primary re-link behavior, launch provider rules, privacy approvals, transaction architecture, and verification.
 - Failed checks: None; implementation has not started.
-- Spec updates: Replaced the prior per-answer history with current requirements, design consequences, active-slice boundaries, and blockers.
+- Spec updates: Replaced automatic merge with explicit proven linking across workflow, boundaries, proof, tasks, and blockers while preserving the minimal post-merge record.

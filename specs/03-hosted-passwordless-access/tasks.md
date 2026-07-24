@@ -6,7 +6,7 @@ Blocked
 
 ## Active Slice
 
-Deliver passwordless hosted sign-in from magic-link request through verified session and stable workspace restoration, with account-neutral failure behavior.
+Deliver passwordless hosted sign-in from magic-link request through verified session and stable workspace restoration, with account-neutral failure behavior and the approved lost-email boundary.
 
 ## Implementation Boundary
 
@@ -14,7 +14,8 @@ Included:
 
 - Magic-link request, delivery, verification, and single-use consumption.
 - Stable hosted identity and workspace creation or restoration.
-- Protected session establishment and sign-out.
+- Persistent independent device sessions, current-device sign-out, active-session management, and all-device sign-out.
+- Verified-email access disclosure and first-release lost-email boundary.
 - Enumeration resistance, abuse controls, audit, and security logging.
 - GDPR data contracts for the introduced processing.
 - Browser and automated proof for success and failure paths.
@@ -26,8 +27,8 @@ Excluded:
 
 Deferred after this slice:
 
-- Combined catalog integration beyond the interfaces needed for hosted session restoration.
-- Email change and account recovery beyond the approved minimum needed for release.
+- Combined catalog integration that preserves separate project identities and shows one authoritative entry after explicit migration or resynchronization.
+- Verified-email change UI and recovery beyond a sign-in method linked before email access was lost.
 
 ## Tasks
 
@@ -48,12 +49,12 @@ Deferred after this slice:
   - Proof: Tests cover new identity, restoration, retry, concurrency, and cross-user isolation.
 
 - [ ] Implement protected hosted sessions and sign-out.
-  - Purpose: Authorize hosted access independently from token delivery and coding agents.
-  - Proof: Session tests cover restoration, expiry, renewal, revocation, sign-out, and rejected access.
+  - Purpose: Authorize hosted access independently from token delivery and coding agents while giving users control over every active device.
+  - Proof: Session tests cover browser restart, multiple independent devices, expiry, renewal, current-device sign-out, individual revocation, all-device revocation, concurrency, and rejected access.
 
 - [ ] Build passwordless authentication UX and recovery states.
   - Purpose: Make success, waiting, resend, expiry, and failure actionable for non-technical users.
-  - Proof: Desktop and mobile browser scenarios cover the complete flow without account disclosure.
+  - Proof: Desktop and mobile browser scenarios cover the complete flow, identify the verified email as the access method, explain the first-release recovery limit, expose no account or unsupported support-recovery path, and provide active-session, current-device sign-out, individual-revocation, and all-device sign-out states.
 
 - [ ] Enforce the feature GDPR data contract and security review.
   - Purpose: Govern email, tokens, sessions, logs, processors, retention, rights, and allowed anonymous metrics.
@@ -65,25 +66,28 @@ Deferred after this slice:
 - [ ] Request, delivery, verification, replay, concurrency, and session tests pass.
 - [ ] Account-enumeration and abuse-control review passes.
 - [ ] Token, credential, client-payload, analytics, and log exposure review passes.
+- [ ] Lost-email scenarios preserve access only through a sign-in method linked beforehand and never authorize verified-email replacement.
+- [ ] Browser-restart, multiple-device, current-session, individual-session, and all-session revocation scenarios pass.
 - [ ] Required desktop and mobile browser scenarios pass.
 - [ ] GDPR data contract, retention, rights, processor, transfer, and privacy-review gates are complete.
 - [ ] Build, formatting, lint, static checks, and failure diagnostics pass.
 
 ## Blocked Decisions
 
-- Define magic-link lifetime, resend invalidation, protected storage, attempt binding, and consumption behavior.
-- Select email delivery, sender, bounce, availability, and processor strategy.
-- Define account-neutral abuse controls and rate limits.
-- Define hosted session, device, sign-out, renewal, and revocation behavior.
-- Define release-blocking recovery and email-change behavior.
-- Approve the GDPR data contract, retention, rights, processor, transfer, anonymisation, and review decisions.
-- Select implementation architecture and canonical verification commands.
+- Technical design: Define magic-link lifetime, resend invalidation, protected storage, attempt binding, and consumption behavior.
+- Technical design: Select email delivery, sender, bounce, availability, and processor strategy.
+- Technical design: Define account-neutral abuse controls and rate limits.
+- Technical design: Select session lifetime, inactivity, renewal, protected storage, device-identification, and revocation mechanisms within the approved behavior.
+- Technical design: Integrate pre-linked sign-in recovery without granting verified-email change authority.
+- Active-slice implementation: Approve the GDPR data contract, retention, rights, processor, transfer, anonymisation, and review decisions.
+- Technical design: Select the implementation architecture.
+- Required verification: Define canonical automated, integration, security, and browser commands.
 
 ## Progress Log
 
 ### 2026-07-23 - Extracted from project onboarding
 
-- Completed: Isolated the accepted verified-email, passwordless magic-link, account-neutral response, hosted-session, and combined-catalog boundaries.
-- Remaining: Resolve token, delivery, abuse, session, recovery, privacy, architecture, and verification decisions.
+- Completed: Approved the hosted-access product requirements, including verified-email access, account-neutral responses, combined catalog behavior, pre-linked recovery, deferred two-proof email change, and persistent independently revocable device sessions.
+- Remaining: Resolve token, delivery, abuse, session mechanism, privacy implementation, architecture, and verification decisions.
 - Failed checks: None; implementation has not started.
-- Spec updates: Created a focused hosted passwordless access specification without changing accepted behavior.
+- Spec updates: Product requirements moved from `Draft` to `Approved`; tasks remain `Blocked` at technical design, privacy implementation, and verification readiness.
