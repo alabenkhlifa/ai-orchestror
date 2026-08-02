@@ -4,7 +4,7 @@
 
 In Progress
 
-The product and technical contracts are approved. Task 7 is complete, and Task 1 is the next executable task using its trusted repository binding. Slice 07 consumption remains a later explicit `update-spec` agreement change.
+The product and technical contracts are approved. Task 7 is complete, and Task 8 is the next executable task establishing the authoritative assessment state that Task 1 presents. Slice 07 consumption remains a later explicit `update-spec` agreement change.
 
 ## Active Slice
 
@@ -14,7 +14,7 @@ Assess one mature repository at one exact commit through a bounded read-only wor
 
 Requires:
 
-- `capability:project-storage-authority` — provider `specs/05-project-storage-lifecycle#Task 4` — required before `Task 1`.
+- `capability:project-storage-authority` — provider `specs/05-project-storage-lifecycle#Task 4` — required before `Task 8`.
 - `capability:workspace-bound-local-worker-authorization` — provider `specs/02-local-project-onboarding#Task 3` — required before `Task 7`.
 - `capability:project-specification-store` — provider `specs/09-project-specification-storage#Task 8` — required before `Task 4`.
 - `capability:project-storage-governance` — provider `specs/05-project-storage-lifecycle#Task 6` — required before `Task 5`.
@@ -73,10 +73,11 @@ Traceability:
 
 ## Parallel Implementation Ownership
 
-- Implementation is partitioned by ownership between `specs/11-ai-runtime-governance#Task 7` and `specs/14-repository-execution-profile#Task 7` plus `#Task 1` (Tasks 14.7 and 14.1).
+- Implementation is partitioned by ownership between `specs/11-ai-runtime-governance#Task 7` and `specs/14-repository-execution-profile#Task 7`, `#Task 8`, plus `#Task 1` (Tasks 14.7, 14.8, and 14.1).
 - `specs/11-ai-runtime-governance#Task 7` exclusively owns the personal AI worker transport, including its socket, channel, and any Endpoint registration.
 - `specs/14-repository-execution-profile#Task 7` exclusively owns the assessment-specific repository-binding value and metadata adapter after disclosure confirmation. It must not modify the personal AI socket, channel, or Endpoint; any shared transport integration is serialized after Slice 11 Task 7.
-- `specs/14-repository-execution-profile#Task 1` exclusively owns repository-assessment persistence and UI, including its migration, hosted and device-authoritative storage contracts, route and project navigation, assessment LiveView, and focused browser test.
+- `specs/14-repository-execution-profile#Task 8` exclusively owns repository-assessment persistence and authorization, including its migration, hosted and device-authoritative storage contracts, owner-only start service, and focused domain and adapter proof.
+- `specs/14-repository-execution-profile#Task 1` exclusively owns repository-assessment UI, including the route and project navigation, assessment LiveView, disclosure and exact-binding presentation, and focused browser test.
 - Repository-wide verification is serialized after the active Slice 11 and Slice 14 task-scoped changes are reconciled. Each parallel task runs only its focused proof and must not modify the other task's owned surfaces.
 
 ## Tasks
@@ -90,14 +91,23 @@ Traceability:
   - Owns: entity:RepositoryBindingPreparation
   - Proof: Focused domain, authorization, adapter-contract, expiry, replay, stale, identity-mismatch, root-containment, exact-commit, cross-project, cross-workspace, no-hosted-copy, no-scan-command, and unchanged-repository tests pass without modifying the personal AI socket, channel, or Endpoint.
 
-- [ ] Task 1 — Establish assessment state and owner-controlled start.
+- [ ] Task 8 — Establish authoritative repository-assessment state and storage parity.
   - Size: Standard
   - Proof scope: Focused
   - Depends on: Task 7
-  - Purpose: Create the authoritative assessment boundary and show the owner the exact repository, root, commit, limits, and processing disclosure before work starts.
-  - Owned surfaces: `RepositoryAssessment` hosted and device value contract, assessment entry and one-root selection UI, exact-commit presentation, changed-boundary confirmation, owner authorization, and no-mutation start transition.
-  - Owns: AC-01, AC-02, entity:RepositoryAssessment
-  - Proof: Focused domain, authorization, adapter-contract, LiveView, and browser tests prove only the owner can start an assessment and no command is issued before a required disclosure confirmation.
+  - Purpose: Consume one unchanged trusted binding through an owner-only service and persist one pending assessment in exactly the project's authoritative storage destination without issuing a scan command.
+  - Owned surfaces: `RepositoryAssessment` value and state transition, hosted schema and migration, hosted and device-authoritative assessment-store adapters, device-store contract, owner and device authority, project and exact-binding isolation, changed-boundary confirmation record, pending-scan creation, stale and replay refusal, no durable hosted copy for device projects, and no-command or repository-mutation contract.
+  - Owns: entity:RepositoryAssessment
+  - Proof: Focused domain, migration, owner and device authorization, hosted/device adapter-contract, restart persistence, cross-project, cross-workspace, stale, replay, no-hosted-copy, no-command, and unchanged-repository tests pass.
+
+- [ ] Task 1 — Establish assessment state and owner-controlled start.
+  - Size: Standard
+  - Proof scope: Focused
+  - Depends on: Task 8
+  - Purpose: Let the owner review the processing boundary and one verified repository binding, then explicitly create the pending assessment through the authoritative Task 8 service.
+  - Owned surfaces: Assessment entry and one-root selection LiveView, hosted and device routes, project navigation, inspected-surface, local-data, transfer, processor, retention, purpose and limit disclosure, first or changed-boundary confirmation interaction, verified repository, normalized-root and full-commit presentation, owner-only start action, and focused desktop/mobile browser scenario.
+  - Owns: AC-01, AC-02
+  - Proof: Focused LiveView authorization and interaction tests plus one desktop/mobile browser file prove only the owner can confirm and start, every required disclosure and exact-binding field is visible, and no metadata or scan command is issued before confirmation.
 
 - [ ] Task 2 — Implement bounded worker-local repository assessment.
   - Size: Standard
@@ -163,12 +173,19 @@ Traceability:
 
 ## Progress Log
 
+### 2026-08-02 - Task 1 boundary refined after implementation preflight
+
+- Completed: Task 1 preflight confirmed `capability:project-storage-authority` is ready but found that the unfinished standard task combined the `RepositoryAssessment` entity and migration, hosted and device persistence adapters, authorization, LiveView/navigation, and browser proof. Split that work without changing product behavior: Task 8 now owns the authoritative assessment state, storage parity, and owner-only start service; Task 1 owns the user-visible disclosure, exact-binding review, confirmation, and start workflow.
+- Remaining: Implement Task 8, then Task 1 and Tasks 2–6. Task 7 remains complete and unchanged.
+- Failed checks: None. Preflight stopped before Task 1 application changes as required by the Task Size Gate.
+- Spec updates: Moved the ready project-storage-authority prerequisite to Task 8, made Task 1 depend on Task 8, reassigned `RepositoryAssessment` entity ownership to Task 8, preserved AC-01 and AC-02 under Task 1, and kept every task focused. The slice remains standard with eight tasks and a longest dependency path of eight.
+
 ### 2026-08-02 - Task 7 complete: trusted repository-binding preparation
 
 - Completed: Added the transient `RepositoryBindingPreparation`, owner and device-authority checks, explicit active workspace-worker selection, exact confirmed-disclosure digest gate, metadata-only adapter with unavailable default, worker-local Git reference, dynamically supervised single-use store, expiry and replay refusal, unchanged revalidation, strict result allowlists, identity and root containment, exact full-commit resolution, and no-durable-copy or repository-mutation proof. `application.ex`, `endpoint.ex`, sockets, channels, personal-AI transport, assessment persistence, routes, and UI remain untouched.
 - Proof receipt: `Task 7` — scope `Focused` — command `MIX_TEST_PARTITION=141 mix test test/sdd_orchestrator/repository_assessments/repository_binding_preparation_test.exs` — exit `0`.
 - Proof receipt: `Task 7` — scope `Focused` — command `mix format --check-formatted lib/sdd_orchestrator/repository_assessments.ex lib/sdd_orchestrator/repository_assessments/binding_store.ex lib/sdd_orchestrator/repository_assessments/repository_binding_preparation.ex lib/sdd_orchestrator/repository_assessments/repository_metadata_adapter.ex lib/sdd_orchestrator/repository_assessments/worker_repository_metadata.ex test/sdd_orchestrator/repository_assessments/repository_binding_preparation_test.exs` — exit `0`.
-- Remaining: Implement Task 1, then Tasks 2–6 and the slice verification gate. Repository-wide verification remains serialized until the completed Slice 11 transport work and this Slice 14 work are reconciled.
+- Remaining: Implement Task 8, then Task 1 and Tasks 2–6 plus the slice verification gate. Repository-wide verification remains serialized until the completed Slice 11 transport work and this Slice 14 work are reconciled.
 - Failed checks: The first focused run exposed an invalid remote call in a guard; the next exposed a test fixture comparing status before its own symlink setup. Both were corrected, and the final receipts above pass.
 - Spec updates: Marked only Task 7 complete and made Task 1 the next executable task. Requirements, design, acceptance criteria, ownership, capability edges, and release gates are unchanged.
 
